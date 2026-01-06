@@ -1,0 +1,5 @@
+CREATE TYPE employee_role AS ENUM ('EMPLOYEE', 'MANAGER');
+
+CREATE TYPE task_status AS ENUM ('NEW', 'IN_PROGRESS', 'COMPLETED');
+
+CREATE TYPE task_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH');
