@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: etarms
+  datasource:
+    url: jdbc:postgresql://localhost:5432/etarms
+    username: postgres
+    password: DatAEngineeR24
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+  flyway:
+    baseline-on-migrate: false
+    baseline-version: 1
+
+jwt:
+  secret: "etarms-secret-key-should-be-at-least-256-bits-long"
+  expiration-ms: 3600000
+  issuer: "etarms-backend"
