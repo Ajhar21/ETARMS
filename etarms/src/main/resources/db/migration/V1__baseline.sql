@@ -39,7 +39,7 @@ INSERT INTO roles (name) VALUES ('EMPLOYEE');
 INSERT INTO users (username, password, enabled, role_id)
 VALUES (
     'admin',
-    '$2a$10$dummyhashedpassword1234567890', -- replace later with real BCrypt hash
+    '$2a$10$X9v7Hk1H.kf5JYxBZ2aLe.8KszxG7A5qfR9jTjvC9QjqYozx4h4kO', -- replace later with real BCrypt hash
     true,
     (SELECT role_id FROM roles WHERE name='ADMIN')
 );

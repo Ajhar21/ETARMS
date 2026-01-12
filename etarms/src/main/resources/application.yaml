@@ -2,9 +2,9 @@ spring:
   application:
     name: etarms
   datasource:
-    url: jdbc:postgresql://localhost:5432/etarms
-    username: postgres
-    password: DatAEngineeR24
+    url: jdbc:postgresql://ep-fragrant-band-a1rstzk7-pooler.ap-southeast-1.aws.neon.tech:5432/etarms?sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_hq6PgdQ0KDaB
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
