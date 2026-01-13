@@ -9,7 +9,9 @@ public interface DepartmentService {
 
     DepartmentResponse create(DepartmentRequest request);
 
-    DepartmentResponse getById(String departmentId);
+//    DepartmentResponse getById(String departmentId);
+
+    DepartmentResponse getByDepartmentId(String departmentId);
 
     List<DepartmentResponse> getAll();
 

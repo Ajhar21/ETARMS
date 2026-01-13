@@ -1,30 +1,41 @@
 package com.ztrios.etarms.employee.service.impl;
 
 import com.ztrios.etarms.employee.dto.EmployeeCreateRequest;
+import com.ztrios.etarms.employee.dto.EmployeePageResponse;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
+import com.ztrios.etarms.employee.entity.Department;
 import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.enums.EmploymentStatus;
+import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import com.ztrios.etarms.employee.util.EmployeeIdGenerator;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository repository;
+    private final DepartmentRepository departmentRepository;
     private final EmployeeIdGenerator idGenerator;
 
-    public EmployeeServiceImpl(EmployeeRepository repository,
+    public EmployeeServiceImpl(EmployeeRepository repository, DepartmentRepository departmentRepository,
                                EmployeeIdGenerator idGenerator) {
         this.repository = repository;
+        this.departmentRepository = departmentRepository;
         this.idGenerator = idGenerator;
     }
 
+    // ===================== CREATE Employee =====================
     @Override
     public EmployeeResponse create(EmployeeCreateRequest request) {
 
@@ -35,35 +46,120 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (repository.existsByPhoneNumber(request.phoneNumber())) {
             throw new IllegalArgumentException("Phone number already exists");
         }
+        Department department = departmentRepository
+//                .findById(request.departmentId())
+                .findByName(request.departmentName())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Invalid department Name: " + request.departmentName()
+                        )
+                );
 
-        Employee employee = Employee.builder()
-                .employeeId(idGenerator.generate())
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .email(request.email())
-                .phoneNumber(request.phoneNumber())
-                .jobTitle(request.jobTitle())
-                .departmentId(request.departmentId())
-                .employmentStatus(EmploymentStatus.ACTIVE)
-                .build();
+        Employee employee = new Employee(
+                idGenerator.generate(),
+                request.firstName(),
+                request.lastName(),
+                request.email(),
+                request.phoneNumber(),
+                request.jobTitle(),
+                EmploymentStatus.ACTIVE,
+                department
+        );
 
         repository.save(employee);
         return mapToResponse(employee);
     }
 
+    // ===================== UPDATE Employee =====================
     @Override
-    public EmployeeResponse getById(String employeeId) {
-        return repository.findById(employeeId)
+    public EmployeeResponse update(String employeeId, EmployeeCreateRequest request) {
+        Employee emp = repository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        Department department = departmentRepository
+//                .findById(request.departmentId())
+                .findByName(request.departmentName())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Invalid department Name: " + request.departmentName()
+                        )
+                );
+
+        emp.update(
+                request.firstName(),
+                request.lastName(),
+                request.email(),
+                request.phoneNumber(),
+                request.jobTitle(),
+                department,
+                request.employmentStatus());
+
+        return mapToResponse(emp);
+    }
+
+    // ===================== DELETE Employee =====================
+    @Override
+    public void delete(String employeeId) {
+        if (!repository.existsByEmployeeId(employeeId)) {
+            throw new RuntimeException("Employee not found");
+        }
+        repository.deleteByEmployeeId(employeeId);
+    }
+
+    // ===================== GET Employee By employeeId=====================
+    @Override
+    public EmployeeResponse getByEmployeeId(String employeeId) {
+        return repository.findByEmployeeId(employeeId)
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
     }
 
+//    @Override
+//    public ResponseEntity<EmployeePageResponse> getEmployees() {
+//        return repository.findAll()
+//                .stream()
+//                .map(this::mapToResponse)
+//                .toList();
+//    }
+//
+
+
+    // ===================== GET Employees Pagination=====================
+//    @Transactional(readOnly = true)
     @Override
-    public List<EmployeeResponse> getAll() {
-        return repository.findAll()
+    public EmployeePageResponse getEmployees(int page, int size, String sort) {
+        // parse sort string like "id,asc"
+        String sortField = "id";
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",");
+            if (parts.length > 0 && !parts[0].isBlank()) {
+                sortField = parts[0];
+            }
+            if (parts.length > 1 && !parts[1].isBlank()) {
+                direction = Sort.Direction.fromString(parts[1]);
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Page<Employee> employeePage = repository.findAll(pageable);
+
+        List<EmployeeResponse> content = employeePage.getContent()
                 .stream()
                 .map(this::mapToResponse)
-                .toList();
+                .collect(Collectors.toList());
+
+
+
+        return new EmployeePageResponse(
+                content,
+                employeePage.getTotalElements(),
+                employeePage.getTotalPages(),
+                employeePage.getNumber(),
+                employeePage.getSize(),
+                employeePage.isLast()
+        );
     }
 
     private EmployeeResponse mapToResponse(Employee e) {
@@ -75,9 +171,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 e.getPhoneNumber(),
                 e.getJobTitle(),
                 e.getEmploymentStatus(),
-                e.getDepartmentId(),
+//                e.getDepartmentId(),
+                e.getDepartment().getDepartmentId(),
                 e.getCreatedAt(),
                 e.getUpdatedAt()
         );
     }
+
+
 }

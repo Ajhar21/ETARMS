@@ -1,41 +1,53 @@
 package com.ztrios.etarms.identity.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "roles")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Role {
 
     @Id
     @Column(name = "role_id", nullable = false, updatable = false)
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private java.time.Instant createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private java.time.Instant updatedAt;
+    private Instant updatedAt;
+
+    /**
+     * Explicit constructor to enforce valid state
+     */
+    public Role(String name) {
+        this.id = UUID.randomUUID();
+        this.name = name;
+    }
 
     @PrePersist
-    public void prePersist() {
-        java.time.Instant now = java.time.Instant.now();
+    protected void prePersist() {
+        Instant now = Instant.now();
         this.createdAt = now;
         this.updatedAt = now;
+
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 
     @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = java.time.Instant.now();
+    protected void preUpdate() {
+        this.updatedAt = Instant.now();
     }
 }

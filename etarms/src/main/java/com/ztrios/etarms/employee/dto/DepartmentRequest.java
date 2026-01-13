@@ -1,11 +1,9 @@
 package com.ztrios.etarms.employee.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
-@Data
-public class DepartmentRequest {
-    @NotBlank
-    private String name;
-    private String description;
-}
+public record DepartmentRequest (
+    @NotBlank String name,
+    @NotBlank String description
+) {}
+

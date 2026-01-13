@@ -2,7 +2,6 @@ package com.ztrios.etarms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 //@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
@@ -10,7 +9,5 @@ public class EtarmsApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EtarmsApplication.class, args);
-        System.out.println("Hello World!");
 	}
-
 }
