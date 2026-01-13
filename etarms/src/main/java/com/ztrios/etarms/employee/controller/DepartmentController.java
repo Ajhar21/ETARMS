@@ -3,6 +3,7 @@ package com.ztrios.etarms.employee.controller;
 import com.ztrios.etarms.employee.dto.DepartmentRequest;
 import com.ztrios.etarms.employee.dto.DepartmentResponse;
 import com.ztrios.etarms.employee.service.DepartmentService;
+import com.ztrios.etarms.employee.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,25 @@ public class DepartmentController {
 
     private final DepartmentService service;
 
+//    public DepartmentController(DepartmentService service) {
+//        this.service = service;
+//    }     //served by @RequiredArgsConstructor
+
+    // ===================== GET ALL Departments =====================
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<List<DepartmentResponse>> list() {
+        return ResponseEntity.ok(service.getAll());
+    }
+
+    // ===================== GET Department By departmentId=====================
+    @GetMapping("/{departmentId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<DepartmentResponse> get(@PathVariable String departmentId) {
+        return ResponseEntity.ok(service.getByDepartmentId(departmentId));
+    }
+
+    // ===================== CREATE Department=====================
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DepartmentResponse> create(
@@ -27,30 +47,20 @@ public class DepartmentController {
                 .body(service.create(request));
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<DepartmentResponse> get(@PathVariable String id) {
-        return ResponseEntity.ok(service.getById(id));
-    }
-
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<List<DepartmentResponse>> list() {
-        return ResponseEntity.ok(service.getAll());
-    }
-
-    @PutMapping("/{id}")
+    // ===================== UPDATE Department=====================
+    @PutMapping("/{departmentId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DepartmentResponse> update(
-            @PathVariable String id,
+            @PathVariable String departmentId,
             @Valid @RequestBody DepartmentRequest request) {
-        return ResponseEntity.ok(service.update(id, request));
+        return ResponseEntity.ok(service.update(departmentId, request));
     }
 
-    @DeleteMapping("/{id}")
+    // ===================== DELETE Department=====================
+    @DeleteMapping("/{departmentId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable String departmentId) {
+        service.delete(departmentId);
         return ResponseEntity.noContent().build();
     }
 }

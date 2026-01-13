@@ -1,6 +1,8 @@
 package com.ztrios.etarms.employee.dto;
 
+import com.ztrios.etarms.employee.enums.EmploymentStatus;
 import jakarta.validation.constraints.*;
+
 
 public record EmployeeCreateRequest(
 
@@ -13,5 +15,7 @@ public record EmployeeCreateRequest(
 
         @NotBlank String jobTitle,
 
-        @NotBlank String departmentId
+//        @NotBlank String departmentId
+        @NotBlank String departmentName, // or departmentId (public)
+        @NotNull EmploymentStatus employmentStatus
 ) {}
