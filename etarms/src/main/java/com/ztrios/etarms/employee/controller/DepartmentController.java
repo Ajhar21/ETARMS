@@ -3,7 +3,6 @@ package com.ztrios.etarms.employee.controller;
 import com.ztrios.etarms.employee.dto.DepartmentRequest;
 import com.ztrios.etarms.employee.dto.DepartmentResponse;
 import com.ztrios.etarms.employee.service.DepartmentService;
-import com.ztrios.etarms.employee.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
