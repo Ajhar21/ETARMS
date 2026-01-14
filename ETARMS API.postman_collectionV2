@@ -108,6 +108,35 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Attendance",
+			"item": [
+				{
+					"name": "check in",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "check-out",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "attendance history",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
