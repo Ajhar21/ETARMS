@@ -8,6 +8,7 @@ import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.enums.EmploymentStatus;
 import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
+import com.ztrios.etarms.employee.service.CloudinaryService;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import com.ztrios.etarms.employee.util.EmployeeIdGenerator;
 import jakarta.transaction.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,12 +26,15 @@ import java.util.stream.Collectors;
 @Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
+    private final CloudinaryService cloudinaryService;
     private final EmployeeRepository repository;
     private final DepartmentRepository departmentRepository;
     private final EmployeeIdGenerator idGenerator;
+    private String thumbnailUrl;
 
-    public EmployeeServiceImpl(EmployeeRepository repository, DepartmentRepository departmentRepository,
+    public EmployeeServiceImpl(CloudinaryService cloudinaryService, EmployeeRepository repository, DepartmentRepository departmentRepository,
                                EmployeeIdGenerator idGenerator) {
+        this.cloudinaryService = cloudinaryService;
         this.repository = repository;
         this.departmentRepository = departmentRepository;
         this.idGenerator = idGenerator;
@@ -162,6 +167,37 @@ public class EmployeeServiceImpl implements EmployeeService {
         );
     }
 
+    @Transactional
+    public String uploadEmployeePhoto(String employeeId, MultipartFile file) {
+        Employee employee = repository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        validateImage(file);
+
+        String photoUrl = cloudinaryService.uploadEmployeeImage(employeeId, file);
+
+        employee.setPhotoUrl(photoUrl);
+//        thumbnailUrl = photoUrl != null ? cloudinaryService.getThumbnailUrl(employeeId) : null;
+        repository.save(employee);
+
+        return photoUrl;
+    }
+
+    private void validateImage(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        if (file.getSize() > 2 * 1024 * 1024) { // 2MB limit
+            throw new IllegalArgumentException("File size exceeds 2MB");
+        }
+
+        String contentType = file.getContentType();
+        if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+            throw new IllegalArgumentException("Only JPEG or PNG images are allowed");
+        }
+    }
+
     private EmployeeResponse mapToResponse(Employee e) {
         return new EmployeeResponse(
                 e.getEmployeeId(),
@@ -173,6 +209,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 e.getEmploymentStatus(),
 //                e.getDepartmentId(),
                 e.getDepartment().getDepartmentId(),
+                e.getPhotoUrl(),
+//                thumbnailUrl,
+                e.getPhotoUrl() != null ? cloudinaryService.getThumbnailUrl(e.getEmployeeId()) : null,
                 e.getCreatedAt(),
                 e.getUpdatedAt()
         );

@@ -60,6 +60,12 @@ public class Employee {
     @JoinColumn(name = "department_ref_id", nullable = false)   //will create department_ref_id, store id of departments table
     private Department department;
 
+    /**
+     * add field for storing image url
+     * */
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
     @CreatedBy
     @Column(name = "created_by", nullable = false, updatable = false)
     private String createdBy;
@@ -149,6 +155,10 @@ public class Employee {
         if (employmentStatus != null) {
             this.employmentStatus = employmentStatus;
         }
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl=photoUrl;
     }
 
 }
