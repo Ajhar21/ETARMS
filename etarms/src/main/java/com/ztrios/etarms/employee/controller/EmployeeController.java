@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -60,5 +61,16 @@ public class EmployeeController {
     public ResponseEntity<Void> delete(@PathVariable String employeeId) {
         service.delete(employeeId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ===================== POST Employee Image=====================
+    @PostMapping("/{id}/photo")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<String> uploadPhoto(
+            @PathVariable("id") String employeeId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        String photoUrl = service.uploadEmployeePhoto(employeeId, file);
+        return ResponseEntity.ok(photoUrl);
     }
 }

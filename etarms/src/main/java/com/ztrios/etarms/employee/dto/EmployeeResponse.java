@@ -13,6 +13,8 @@ public record EmployeeResponse(
         String jobTitle,
         EmploymentStatus employmentStatus,
         String departmentId,
+        String photoUrl,      // full-size image
+        String thumbnailUrl,   // 150x150 thumbnail
         Instant createdAt,
         Instant updatedAt
 ) {}
