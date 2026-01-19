@@ -14,6 +14,7 @@ Update department: UPDATE http://localhost:8080/api/v1/departments/{department_i
 Delete department: DELETE http://localhost:8080/api/v1/departments/{department_id}<br>
 Get departments: GET http://localhost:8080/api/v1/departments<br>
 Get department by department_id: GET http://localhost:8080/api/v1/departments/dep13<br>
+Upload employee image: POST http://localhost:8080/api/v1/employees/emp004/photo<br>
 
 __attendanceModule__<br>
 check-in: POST http://localhost:8080/api/v1/attendance/check-in<br>
@@ -26,4 +27,8 @@ Reassign task: PATCH http://localhost:8080/api/v1/tasks/reassignment<br>
 status update: PATCH http://localhost:8080/api/v1/tasks/status<br> 
 tasks by employee: GET http://localhost:8080/api/v1/tasks/employee/{employee_id}<br>
 tasks by manager: GET http://localhost:8080/api/v1/tasks/manager/{manager}<br>
+
+__ReportingModule__<br>
+monthly Attendance Report(filter by departmentId optional): GET http://localhost:8080/reports/attendance/monthly?year=2026&month=1&departmentId=dep003<br>
+monthly Attendance Report Export: GET http://localhost:8080/reports/attendance/monthly/export?year=2026&month=1&departmentId=dep003<br>
 
