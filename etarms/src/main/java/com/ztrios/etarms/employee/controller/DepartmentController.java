@@ -39,7 +39,7 @@ public class DepartmentController {
 
     // ===================== CREATE Department=====================
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<DepartmentResponse> create(
             @Valid @RequestBody DepartmentRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -48,7 +48,7 @@ public class DepartmentController {
 
     // ===================== UPDATE Department=====================
     @PutMapping("/{departmentId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<DepartmentResponse> update(
             @PathVariable String departmentId,
             @Valid @RequestBody DepartmentRequest request) {
@@ -57,7 +57,7 @@ public class DepartmentController {
 
     // ===================== DELETE Department=====================
     @DeleteMapping("/{departmentId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable String departmentId) {
         service.delete(departmentId);
         return ResponseEntity.noContent().build();

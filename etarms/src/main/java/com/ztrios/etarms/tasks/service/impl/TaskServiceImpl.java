@@ -1,6 +1,8 @@
 package com.ztrios.etarms.tasks.service.impl;
 
-import com.ztrios.etarms.config.AuditorAwareImpl;
+import com.ztrios.etarms.audit.config.AuditorAwareImpl;
+import com.ztrios.etarms.audit.model.AuditAction;
+import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import com.ztrios.etarms.identity.entity.User;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -26,16 +27,18 @@ public class TaskServiceImpl implements TaskService {
     private final UserRepository userRepository;
     private final TaskIdGenerator taskIdGenerator;
     private final AuditorAwareImpl auditorAwareImpl;
+    private final AuditService auditService;
 
     public TaskServiceImpl(TaskRepository taskRepository,
                        EmployeeRepository employeeRepository,
                        UserRepository userRepository,
-                       TaskIdGenerator taskIdGenerator, AuditorAwareImpl auditorAwareImpl) {
+                       TaskIdGenerator taskIdGenerator, AuditorAwareImpl auditorAwareImpl,AuditService auditService) {
         this.taskRepository = taskRepository;
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
         this.taskIdGenerator = taskIdGenerator;
         this.auditorAwareImpl = auditorAwareImpl;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -69,6 +72,13 @@ public class TaskServiceImpl implements TaskService {
         );
 
         taskRepository.save(task);
+
+        auditService.log(
+                AuditAction.CREATE_TASK,
+                "Task",
+                task.getId().toString(),
+                "Task created with title: " + task.getTitle()
+        );
 
         // Build response
 //        return new TaskResponse(
@@ -110,6 +120,13 @@ public class TaskServiceImpl implements TaskService {
         // Save task
         taskRepository.save(task);
 
+        auditService.log(
+                AuditAction.REASSIGN_TASK,
+                "Task",
+                task.getId().toString(),
+                "Task reassigned from " + previousAssignee + " to " + newAssignee.getEmployeeId()
+        );
+
         return new TaskReassignResponse(
                 task.getTaskId(),
                 previousAssignee,
@@ -137,6 +154,13 @@ public class TaskServiceImpl implements TaskService {
         }
 
         taskRepository.save(task);
+
+        auditService.log(
+                AuditAction.UPDATE_TASK_STATUS,
+                "Task",
+                task.getId().toString(),
+                "Task status updated to " + task.getStatus()
+        );
 
         // Build response
 //        return new TaskResponse(
@@ -192,5 +216,4 @@ public class TaskServiceImpl implements TaskService {
                 task.getTaskManager().getUsername()      // manager username from User
         );
     }
-
 }

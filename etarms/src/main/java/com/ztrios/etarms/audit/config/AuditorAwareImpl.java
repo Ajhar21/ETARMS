@@ -1,4 +1,4 @@
-package com.ztrios.etarms.config;
+package com.ztrios.etarms.audit.config;
 
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;

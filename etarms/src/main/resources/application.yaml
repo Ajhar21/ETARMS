@@ -20,11 +20,11 @@ jwt:
   secret: "etarms-secret-key-should-be-at-least-256-bits-long"
   expiration-ms: 3600000
   issuer: "etarms-backend"
-#cloudinary:
-#  cloud-name: drsbk3hfn
-#  api-key: 958439486689679
-#  api-secret: bAkP0MZcB7VC91MmYe8QzSD0A18
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:drsbk3hfn}
-  api-key: ${CLOUDINARY_API_KEY:}
-  api-secret: ${CLOUDINARY_API_SECRET:}
+  cloud-name: drsbk3hfn
+  api-key: 958439486689679
+  api-secret: bAkP0MZcB7VC91MmYe8QzSD0A18
+#cloudinary:
+#  cloud-name: ${CLOUDINARY_CLOUD_NAME:drsbk3hfn}
+#  api-key: ${CLOUDINARY_API_KEY:}
+#  api-secret: ${CLOUDINARY_API_SECRET:}

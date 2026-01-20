@@ -3,6 +3,7 @@ package com.ztrios.etarms.employee.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,13 +19,13 @@ public class CloudinaryService {
         this.cloudinary = cloudinary;
     }
 
-    public String uploadEmployeeImage(String employeeId, MultipartFile file) {
+    public String uploadEmployeeImage(@NotNull String employeeId, @NotNull MultipartFile file) {
         try {
             // Optional:can use employeeId or UUID for public_id
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
                     "folder", "etarms/employees",
-                    "public_id", employeeId,  // overwrite same employee image
-                    "overwrite", true,
+                    "public_id", employeeId,
+                    "overwrite", true,  // overwrite same employee image
                     "resource_type", "image"
             ));
             return uploadResult.get("secure_url").toString();
