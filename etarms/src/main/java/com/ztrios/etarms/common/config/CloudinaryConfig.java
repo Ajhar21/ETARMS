@@ -1,4 +1,4 @@
-package com.ztrios.etarms.config;
+package com.ztrios.etarms.common.config;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Value;

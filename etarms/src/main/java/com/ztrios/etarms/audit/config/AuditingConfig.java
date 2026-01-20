@@ -1,4 +1,4 @@
-package com.ztrios.etarms.config;
+package com.ztrios.etarms.audit.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

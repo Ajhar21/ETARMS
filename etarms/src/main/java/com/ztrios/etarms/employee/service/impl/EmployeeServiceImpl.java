@@ -1,5 +1,7 @@
 package com.ztrios.etarms.employee.service.impl;
 
+import com.ztrios.etarms.audit.model.AuditAction;
+import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.employee.dto.EmployeeCreateRequest;
 import com.ztrios.etarms.employee.dto.EmployeePageResponse;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
@@ -30,14 +32,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository repository;
     private final DepartmentRepository departmentRepository;
     private final EmployeeIdGenerator idGenerator;
-    private String thumbnailUrl;
+//    private String thumbnailUrl;
+    private final AuditService auditService;
 
     public EmployeeServiceImpl(CloudinaryService cloudinaryService, EmployeeRepository repository, DepartmentRepository departmentRepository,
-                               EmployeeIdGenerator idGenerator) {
+                               EmployeeIdGenerator idGenerator,AuditService auditService) {
         this.cloudinaryService = cloudinaryService;
         this.repository = repository;
         this.departmentRepository = departmentRepository;
         this.idGenerator = idGenerator;
+        this.auditService = auditService;
     }
 
     // ===================== CREATE Employee =====================
@@ -72,6 +76,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         );
 
         repository.save(employee);
+
+//        auditService.log(
+//                AuditAction.CREATE_EMPLOYEE,
+//                "Employee",
+//                employee.getEmployeeId(),
+//                "Employee created with name " + employee.getFirstName()+" "+ employee.getLastName()
+//        );
+//
         return mapToResponse(employee);
     }
 
@@ -99,16 +111,32 @@ public class EmployeeServiceImpl implements EmployeeService {
                 department,
                 request.employmentStatus());
 
+//        auditService.log(
+//                AuditAction.UPDATE_EMPLOYEE,
+//                "Employee",
+//                emp.getEmployeeId(),
+//                "Employee updated: " + emp.getFirstName()+" "+ emp.getLastName()
+//        );
+
         return mapToResponse(emp);
     }
 
     // ===================== DELETE Employee =====================
     @Override
     public void delete(String employeeId) {
-        if (!repository.existsByEmployeeId(employeeId)) {
-            throw new RuntimeException("Employee not found");
-        }
-        repository.deleteByEmployeeId(employeeId);
+        Employee emp = repository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+//        auditService.log(
+//                AuditAction.DELETE_EMPLOYEE,
+//                "Employee",
+//                emp.getEmployeeId(),
+//                "Employee deleted: " + emp.getFirstName()+" "+ emp.getLastName()
+//        );
+
+        repository.delete(emp);
+
+//        repository.deleteByEmployeeId(employeeId);
     }
 
     // ===================== GET Employee By employeeId=====================
@@ -179,6 +207,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setPhotoUrl(photoUrl);
 //        thumbnailUrl = photoUrl != null ? cloudinaryService.getThumbnailUrl(employeeId) : null;
         repository.save(employee);
+
+        auditService.log(
+                AuditAction.UPLOAD_EMPLOYEE_PHOTO,
+                "Employee",
+                employee.getEmployeeId(),
+                "Employee photo uploaded" + employee.getFirstName()+" "+ employee.getLastName()
+        );
 
         return photoUrl;
     }

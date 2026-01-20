@@ -5,6 +5,8 @@ import com.ztrios.etarms.attendance.entity.Attendance;
 import com.ztrios.etarms.attendance.enums.AttendanceStatus;
 import com.ztrios.etarms.attendance.repository.AttendanceRepository;
 import com.ztrios.etarms.attendance.service.AttendanceService;
+import com.ztrios.etarms.audit.model.AuditAction;
+import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
@@ -20,11 +22,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
+    private final AuditService auditService;
 
     public AttendanceServiceImpl(AttendanceRepository attendanceRepository,
-                                 EmployeeRepository employeeRepository) {
+                                 EmployeeRepository employeeRepository,AuditService auditService) {
         this.attendanceRepository = attendanceRepository;
         this.employeeRepository = employeeRepository;
+        this.auditService = auditService;
     }
 
     @Override
@@ -40,14 +44,23 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
 
         // Check for existing attendance today
         attendanceRepository.findByEmployeeAndAttendanceDate(employee, today)
                 .ifPresent(a -> { throw new IllegalStateException("Attendance already exists for today"); });
 
         // Create attendance
-        Attendance attendance = new Attendance(employee, today, LocalDateTime.now(), AttendanceStatus.INCOMPLETE);
+        Attendance attendance = new Attendance(employee, today, now, AttendanceStatus.INCOMPLETE);
         attendanceRepository.save(attendance);
+
+        auditService.log(
+                AuditAction.CHECK_IN,
+                "Attendance",
+                attendance.getId().toString(),
+                "Employee checked in at " + now
+        );
+
 
         return new AttendanceCheckInResponse(employee.getEmployeeId(), attendance.getCheckInTime());
     }
@@ -66,6 +79,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         openAttendance.checkOut(LocalDateTime.now());
 
         attendanceRepository.save(openAttendance);
+
+        auditService.log(
+                AuditAction.CHECK_OUT,
+                "Attendance",
+                openAttendance.getId().toString(),
+                "Employee "+employee.getEmployeeId()+" Employee checked out at " + openAttendance.getCheckOutTime()
+        );
 
         return new AttendanceCheckOutResponse(
                 employee.getEmployeeId(),

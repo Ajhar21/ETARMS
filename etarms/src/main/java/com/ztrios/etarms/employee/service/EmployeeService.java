@@ -3,10 +3,8 @@ package com.ztrios.etarms.employee.service;
 import com.ztrios.etarms.employee.dto.EmployeeCreateRequest;
 import com.ztrios.etarms.employee.dto.EmployeePageResponse;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 
 public interface EmployeeService {
 

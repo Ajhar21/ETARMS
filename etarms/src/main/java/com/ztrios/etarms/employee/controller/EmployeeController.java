@@ -48,7 +48,7 @@ public class EmployeeController {
 
     // ===================== UPDATE Employee =====================
     @PutMapping("/{employeeId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<EmployeeResponse> update(
             @PathVariable String employeeId,
             @Valid @RequestBody EmployeeCreateRequest request) {
@@ -57,7 +57,7 @@ public class EmployeeController {
 
     // ===================== DELETE Employee =====================
     @DeleteMapping("/{employeeId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable String employeeId) {
         service.delete(employeeId);
         return ResponseEntity.noContent().build();
@@ -68,7 +68,7 @@ public class EmployeeController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<String> uploadPhoto(
             @PathVariable("id") String employeeId,
-            @RequestParam("file") MultipartFile file
+            @Valid @RequestParam("file") MultipartFile file
     ) {
         String photoUrl = service.uploadEmployeePhoto(employeeId, file);
         return ResponseEntity.ok(photoUrl);
