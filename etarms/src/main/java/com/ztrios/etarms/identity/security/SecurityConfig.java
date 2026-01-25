@@ -23,29 +23,38 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint; // <-- add this
+
+    // DaoAuthenticationProvider
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        // 🔹 DaoAuthenticationProvider constructor now only accepts UserDetailsService
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-
-        // 🔹 Set the password encoder via the constructor method
-        provider.setPasswordEncoder(passwordEncoder); // use injected bean
-
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
-    // 🔐 Authentication Manager Bean
+    // AuthenticationManager bean
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // 🔒 Security Filter Chain
+    // SecurityFilterChain
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF
                 .csrf(csrf -> csrf.disable())
+
+                // Stateless session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Exception handling for authentication failures
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // <-- added
+                )
+
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/**",
@@ -57,7 +66,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
+
+                // Authentication provider
                 .authenticationProvider(authenticationProvider())
+
+                // JWT filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

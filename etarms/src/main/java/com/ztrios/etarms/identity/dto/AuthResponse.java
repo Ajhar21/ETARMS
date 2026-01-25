@@ -1,14 +1,12 @@
 package com.ztrios.etarms.identity.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthResponse {
-    private String token;
-    private String username;
-    private String role;
+@Builder
+public record AuthResponse(
+        String token,
+        String refreshToken,
+        String username,
+        String role
+) {
 }

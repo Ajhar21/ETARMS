@@ -8,9 +8,10 @@ import java.util.List;
 
 public interface TaskService {
     TaskResponse createTask(TaskCreateRequest request);
+
     TaskReassignResponse reassignTask(TaskReassignRequest request);
 
-    TaskResponse statusUpdate(@Valid TaskStatusUpdateReq request);
+    TaskResponse statusUpdate(TaskStatusUpdateReq request);
 
     List<TaskResponse> getTasksByEmployee(String employeeId);
 

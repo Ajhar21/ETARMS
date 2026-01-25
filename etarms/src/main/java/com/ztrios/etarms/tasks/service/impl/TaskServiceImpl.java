@@ -3,6 +3,8 @@ package com.ztrios.etarms.tasks.service.impl;
 import com.ztrios.etarms.audit.config.AuditorAwareImpl;
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
+import com.ztrios.etarms.common.exception.BusinessException;
+import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import com.ztrios.etarms.identity.entity.User;
@@ -30,9 +32,9 @@ public class TaskServiceImpl implements TaskService {
     private final AuditService auditService;
 
     public TaskServiceImpl(TaskRepository taskRepository,
-                       EmployeeRepository employeeRepository,
-                       UserRepository userRepository,
-                       TaskIdGenerator taskIdGenerator, AuditorAwareImpl auditorAwareImpl,AuditService auditService) {
+                           EmployeeRepository employeeRepository,
+                           UserRepository userRepository,
+                           TaskIdGenerator taskIdGenerator, AuditorAwareImpl auditorAwareImpl, AuditService auditService) {
         this.taskRepository = taskRepository;
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
@@ -46,14 +48,14 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse createTask(TaskCreateRequest request) {
         // Fetch assignee
         Employee assignee = employeeRepository.findByEmployeeId(request.assignedTo())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid assigned_to employee"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid assignedTo(employee)"));
 
         // Fetch manager from JWT
 //        String managerUserId = SecurityContextHolder.getContext().getAuthentication().getName();
-        String managerUsername  = auditorAwareImpl.getCurrentAuditor()
-                .orElseThrow(() -> new IllegalArgumentException("No authenticated user found"));
+        String managerUsername = auditorAwareImpl.getCurrentAuditor()
+                .orElseThrow(() -> new ResourceNotFoundException("No authenticated user found"));
         User manager = userRepository.findByUsername(managerUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid manager from JWT"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid manager from JWT"));
 
         // Generate taskId
         String taskId = taskIdGenerator.nextTaskId();
@@ -100,16 +102,16 @@ public class TaskServiceImpl implements TaskService {
         // Fetch task
 //        Task task = taskRepository.findById(taskRepository.findId(request.taskId()))
         Task task = taskRepository.findByTaskId(request.taskId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid taskId, no task found by taskId"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid taskId, no task found by taskId"));
 
         // Check status
         if (task.getStatus() == TaskStatus.COMPLETED) {
-            throw new IllegalStateException("Cannot reassign a COMPLETED task");
+            throw new BusinessException("Cannot reassign a COMPLETED task");
         }
 
         // Fetch new assignee
         Employee newAssignee = employeeRepository.findByEmployeeId(request.newAssignedTo())
-                .orElseThrow(() -> new IllegalArgumentException("Assigned employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("New Assignee(employee) not found"));
 
         // Save previous assignee
         String previousAssignee = task.getAssignee().getEmployeeId();
@@ -143,13 +145,12 @@ public class TaskServiceImpl implements TaskService {
         // Fetch task
 //        Task task = taskRepository.findById(taskRepository.findId(request.taskId()))
         Task task = taskRepository.findByTaskId(request.taskId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid taskId, no task found by taskId"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid taskId, no task found by taskId"));
 
         // Check status
         if (task.getStatus() == TaskStatus.COMPLETED) {
-            throw new IllegalStateException("Cannot update a COMPLETED task");
-        }
-        else {
+            throw new BusinessException("Cannot update a COMPLETED task");
+        } else {
             task.updateStatus(TaskStatus.valueOf(request.status()));
         }
 
@@ -181,7 +182,7 @@ public class TaskServiceImpl implements TaskService {
 
         Employee employee = employeeRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Employee not found: " + employeeId)
+                        new ResourceNotFoundException("Employee not found: " + employeeId)
                 );
 
         return taskRepository.findByAssignee(employee)
@@ -195,7 +196,7 @@ public class TaskServiceImpl implements TaskService {
 
         User user = userRepository.findByUsername(manager)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Manager not exists in user: " + manager)
+                        new ResourceNotFoundException("Manager not exists in user: " + manager)
                 );
 
         return taskRepository.findByTaskManager(user)
