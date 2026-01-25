@@ -2,6 +2,7 @@ package com.ztrios.etarms.reporting.service;
 
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
+import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.reporting.projection.MonthlyAttendanceSummaryProjection;
 import com.ztrios.etarms.reporting.repository.AttendanceReportRepository;
@@ -28,7 +29,7 @@ public class ReportService {
         if (departmentId != null && !departmentId.isBlank()) {
             departmentRepository.findByDepartmentId(departmentId)
                     .orElseThrow(() ->
-                            new IllegalArgumentException(
+                            new ResourceNotFoundException(
                                     "Department not found with id: " + departmentId
                             )
                     );
@@ -55,7 +56,7 @@ public class ReportService {
         if (departmentId != null && !departmentId.isBlank()) {
             departmentRepository.findByDepartmentId(departmentId)
                     .orElseThrow(() ->
-                            new IllegalArgumentException(
+                            new ResourceNotFoundException(
                                     "Department not found with id: " + departmentId
                             )
                     );

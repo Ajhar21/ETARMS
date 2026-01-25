@@ -18,7 +18,7 @@ spring:
 
 jwt:
   secret: "etarms-secret-key-should-be-at-least-256-bits-long"
-  expiration-ms: 3600000
+  expiration-ms: 600000
   issuer: "etarms-backend"
 cloudinary:
   cloud-name: drsbk3hfn

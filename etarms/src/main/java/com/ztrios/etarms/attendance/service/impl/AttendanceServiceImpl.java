@@ -7,6 +7,8 @@ import com.ztrios.etarms.attendance.repository.AttendanceRepository;
 import com.ztrios.etarms.attendance.service.AttendanceService;
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
+import com.ztrios.etarms.common.exception.BusinessException;
+import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
@@ -25,7 +27,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final AuditService auditService;
 
     public AttendanceServiceImpl(AttendanceRepository attendanceRepository,
-                                 EmployeeRepository employeeRepository,AuditService auditService) {
+                                 EmployeeRepository employeeRepository, AuditService auditService) {
         this.attendanceRepository = attendanceRepository;
         this.employeeRepository = employeeRepository;
         this.auditService = auditService;
@@ -36,11 +38,11 @@ public class AttendanceServiceImpl implements AttendanceService {
     public AttendanceCheckInResponse checkIn(AttendanceCheckInRequest request) {
         // Resolve Employee
         Employee employee = employeeRepository.findByEmployeeId(request.employeeId())
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         // Validate ACTIVE status
         if (!employee.getEmploymentStatus().name().equals("ACTIVE")) {
-            throw new IllegalStateException("Only ACTIVE employees can check in");
+            throw new BusinessException("Only ACTIVE employees can check in");
         }
 
         LocalDate today = LocalDate.now();
@@ -48,7 +50,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // Check for existing attendance today
         attendanceRepository.findByEmployeeAndAttendanceDate(employee, today)
-                .ifPresent(a -> { throw new IllegalStateException("Attendance already exists for today"); });
+                .ifPresent(a -> {
+                    throw new BusinessException("Attendance already exists for today");
+                });
 
         // Create attendance
         Attendance attendance = new Attendance(employee, today, now, AttendanceStatus.INCOMPLETE);
@@ -69,11 +73,11 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional
     public AttendanceCheckOutResponse checkOut(AttendanceCheckOutRequest request) {
         Employee employee = employeeRepository.findByEmployeeId(request.employeeId())
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         Attendance openAttendance = attendanceRepository
                 .findByEmployeeAndCheckOutTimeIsNull(employee)
-                .orElseThrow(() -> new IllegalStateException("No open attendance found for check-out"));
+                .orElseThrow(() -> new BusinessException("No open attendance found for check-out"));
 
         // Perform check-out using entity method
         openAttendance.checkOut(LocalDateTime.now());
@@ -84,7 +88,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 AuditAction.CHECK_OUT,
                 "Attendance",
                 openAttendance.getId().toString(),
-                "Employee "+employee.getEmployeeId()+" Employee checked out at " + openAttendance.getCheckOutTime()
+                "Employee " + employee.getEmployeeId() + " Employee checked out at " + openAttendance.getCheckOutTime()
         );
 
         return new AttendanceCheckOutResponse(
@@ -123,7 +127,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // Fetch Employee by business ID
         Employee employee = employeeRepository.findByEmployeeId(request.employeeId())
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         // Handle null dates
         LocalDate startDate = request.startDate() != null ? request.startDate() : LocalDate.now().minusYears(1); // default 1 year
@@ -131,7 +135,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // Validate range
         if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("startDate cannot be after endDate");
+            throw new BusinessException("startDate cannot be after endDate");
         }
 
         // Fetch paginated attendance records

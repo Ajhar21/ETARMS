@@ -93,6 +93,14 @@
             "header": []
           },
           "response": []
+        },
+        {
+          "name": "upload employee image",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
         }
       ]
     },
@@ -101,6 +109,22 @@
       "item": [
         {
           "name": "login",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "refresh-token",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
           "request": {
             "method": "GET",
             "header": []
@@ -175,6 +199,27 @@
         },
         {
           "name": "tasks by manager",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "monthlyAttendanceReport",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "monthlyAttendanceReportExport",
           "request": {
             "method": "GET",
             "header": []

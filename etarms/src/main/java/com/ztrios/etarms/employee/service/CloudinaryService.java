@@ -3,6 +3,7 @@ package com.ztrios.etarms.employee.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
+import com.ztrios.etarms.common.exception.ExternalServiceException;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +31,10 @@ public class CloudinaryService {
             ));
             return uploadResult.get("secure_url").toString();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload image to Cloudinary", e);
+            throw new ExternalServiceException(
+                    "Image upload service is currently unavailable",
+                    e
+            );
         }
     }
 

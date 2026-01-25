@@ -2,6 +2,10 @@ package com.ztrios.etarms.employee.service.impl;
 
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
+import com.ztrios.etarms.common.exception.BusinessException;
+import com.ztrios.etarms.common.exception.InvalidBusinessStateException;
+import com.ztrios.etarms.common.exception.InvalidFileException;
+import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.dto.EmployeeCreateRequest;
 import com.ztrios.etarms.employee.dto.EmployeePageResponse;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
@@ -32,11 +36,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository repository;
     private final DepartmentRepository departmentRepository;
     private final EmployeeIdGenerator idGenerator;
-//    private String thumbnailUrl;
     private final AuditService auditService;
 
     public EmployeeServiceImpl(CloudinaryService cloudinaryService, EmployeeRepository repository, DepartmentRepository departmentRepository,
-                               EmployeeIdGenerator idGenerator,AuditService auditService) {
+                               EmployeeIdGenerator idGenerator, AuditService auditService) {
         this.cloudinaryService = cloudinaryService;
         this.repository = repository;
         this.departmentRepository = departmentRepository;
@@ -49,17 +52,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse create(EmployeeCreateRequest request) {
 
         if (repository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already exists");
+
+//            throw new IllegalArgumentException("Email already exists");
+            throw new InvalidBusinessStateException("Email already exists");
         }
 
         if (repository.existsByPhoneNumber(request.phoneNumber())) {
-            throw new IllegalArgumentException("Phone number already exists");
+//            throw new IllegalArgumentException("Phone number already exists");
+            throw new InvalidBusinessStateException("Phone number already exists");
         }
         Department department = departmentRepository
 //                .findById(request.departmentId())
                 .findByName(request.departmentName())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Invalid department Name: " + request.departmentName()
                         )
                 );
@@ -91,16 +97,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse update(String employeeId, EmployeeCreateRequest request) {
         Employee emp = repository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         Department department = departmentRepository
 //                .findById(request.departmentId())
                 .findByName(request.departmentName())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Invalid department Name: " + request.departmentName()
-                        )
-                );
+//                        new IllegalArgumentException(
+//                                "Invalid department Name: " + request.departmentName()
+                        new ResourceNotFoundException("Invalid department Name: " + request.departmentName()));
 
         emp.update(
                 request.firstName(),
@@ -125,7 +130,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void delete(String employeeId) {
         Employee emp = repository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
 //        auditService.log(
 //                AuditAction.DELETE_EMPLOYEE,
@@ -144,18 +149,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse getByEmployeeId(String employeeId) {
         return repository.findByEmployeeId(employeeId)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+//                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
     }
-
-//    @Override
-//    public ResponseEntity<EmployeePageResponse> getEmployees() {
-//        return repository.findAll()
-//                .stream()
-//                .map(this::mapToResponse)
-//                .toList();
-//    }
-//
-
 
     // ===================== GET Employees Pagination=====================
 //    @Transactional(readOnly = true)
@@ -184,7 +180,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .collect(Collectors.toList());
 
 
-
         return new EmployeePageResponse(
                 content,
                 employeePage.getTotalElements(),
@@ -198,7 +193,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public String uploadEmployeePhoto(String employeeId, MultipartFile file) {
         Employee employee = repository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+//                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        //business rules
+        if (!repository.isActive(employeeId)) {
+            throw new BusinessException("Cannot upload photo for inactive/Suspended/terminated employee");
+        }
 
         validateImage(file);
 
@@ -212,7 +213,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 AuditAction.UPLOAD_EMPLOYEE_PHOTO,
                 "Employee",
                 employee.getEmployeeId(),
-                "Employee photo uploaded" + employee.getFirstName()+" "+ employee.getLastName()
+                "Employee photo uploaded" + employee.getFirstName() + " " + employee.getLastName()
         );
 
         return photoUrl;
@@ -220,16 +221,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private void validateImage(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("File is empty");
+//            throw new IllegalArgumentException("File is empty");
+            throw new InvalidFileException("File is empty");
         }
 
         if (file.getSize() > 2 * 1024 * 1024) { // 2MB limit
-            throw new IllegalArgumentException("File size exceeds 2MB");
+//            throw new IllegalArgumentException("File size exceeds 2MB");
+            throw new InvalidFileException("File size exceeds 2MB");
         }
 
         String contentType = file.getContentType();
         if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
-            throw new IllegalArgumentException("Only JPEG or PNG images are allowed");
+//            throw new IllegalArgumentException("Only JPEG or PNG images are allowed");
+            throw new InvalidFileException("Only JPEG or PNG images are allowed");
         }
     }
 

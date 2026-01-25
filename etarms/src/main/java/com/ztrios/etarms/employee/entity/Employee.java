@@ -26,7 +26,7 @@ public class Employee {
      */
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id=UUID.randomUUID();
+    private UUID id = UUID.randomUUID();
 
     /**
      * Business identifier (safe to expose)
@@ -57,12 +57,14 @@ public class Employee {
      * Many Employees -> One Department
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "department_ref_id", nullable = false)   //will create department_ref_id, store id of departments table
+    @JoinColumn(name = "department_ref_id", nullable = false)
+    //will create department_ref_id, store id of departments table
     private Department department;
 
     /**
      * add field for storing image url
-     * */
+     *
+     */
     @Column(name = "photo_url", length = 500)
     private String photoUrl;
 
@@ -158,7 +160,7 @@ public class Employee {
     }
 
     public void setPhotoUrl(String photoUrl) {
-        this.photoUrl=photoUrl;
+        this.photoUrl = photoUrl;
     }
 
 }

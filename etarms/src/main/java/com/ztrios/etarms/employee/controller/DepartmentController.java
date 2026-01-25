@@ -3,6 +3,7 @@ package com.ztrios.etarms.employee.controller;
 import com.ztrios.etarms.employee.dto.DepartmentRequest;
 import com.ztrios.etarms.employee.dto.DepartmentResponse;
 import com.ztrios.etarms.employee.service.DepartmentService;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -50,7 +52,8 @@ public class DepartmentController {
     @PutMapping("/{departmentId}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<DepartmentResponse> update(
-            @PathVariable String departmentId,
+            @PathVariable
+            @Pattern(regexp = "dep\\d{3}", message = "Invalid department ID") String departmentId,  //not good practice to use it for path variable
             @Valid @RequestBody DepartmentRequest request) {
         return ResponseEntity.ok(service.update(departmentId, request));
     }

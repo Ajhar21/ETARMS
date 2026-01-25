@@ -42,7 +42,7 @@ public class ReportController {
         response.setContentType("text/csv");
         response.setHeader(
                 "Content-Disposition",
-                "attachment; filename=monthly-attendance-" + year + "-" + month + ".csv"
+                "attachment; filename=monthly-attendance-" + year + "-" + month + ".csv"    //attachment used for download report automatically, replace attachment by inline can stop auto download
         );
 
         reportService.exportMonthlyAttendanceCsv(

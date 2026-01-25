@@ -2,6 +2,8 @@ package com.ztrios.etarms.employee.service.impl;
 
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
+import com.ztrios.etarms.common.exception.InvalidBusinessStateException;
+import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.dto.DepartmentRequest;
 import com.ztrios.etarms.employee.dto.DepartmentResponse;
 import com.ztrios.etarms.employee.entity.Department;
@@ -23,7 +25,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository repository;
     private final JdbcTemplate jdbcTemplate;
-//    @Autowired
+    //    @Autowired
     private final AuditService auditService;
 
     // ===================== CREATE Department =====================
@@ -31,7 +33,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentResponse create(DepartmentRequest request) {
 
         if (repository.existsByName(request.name())) {
-            throw new RuntimeException("Department already exists");
+//            throw new RuntimeException("Department already exists");
+            throw new InvalidBusinessStateException("Department already exists");
         }
 
         Long seq = jdbcTemplate.queryForObject(
@@ -42,10 +45,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 //                .name(request.getName())
 //                .description(request.getDescription())
 //                .build();
+
         Department dept = new Department(
-                        DepartmentIdGenerator.nextId(seq),
-                        request.name(),
-                        request.description());
+                DepartmentIdGenerator.nextId(seq),
+                request.name(),
+                request.description());
 
         repository.save(dept);
 
@@ -64,7 +68,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentResponse getByDepartmentId(String departmentId) {
         return repository.findByDepartmentId(departmentId)
                 .map(this::map)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+//                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
+
     }
 
     // ===================== GET ALL Departments =====================
@@ -80,11 +86,12 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public DepartmentResponse update(String departmentId, DepartmentRequest request) {
         Department dept = repository.findByDepartmentId(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+//                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
 
 //        dept.setName(request.getName());
 //        dept.setDescription(request.getDescription());
-        dept.update(request.name(),request.description());
+        dept.update(request.name(), request.description());
 
         auditService.log(
                 AuditAction.UPDATE_DEPARTMENT,
@@ -103,8 +110,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 //            throw new RuntimeException("Department not found");
 //        }
         Department dept = repository.findByDepartmentId(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
-
+//                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
         auditService.log(
                 AuditAction.DELETE_DEPARTMENT,
                 "Department",
