@@ -2,20 +2,12 @@ package com.ztrios.etarms.identity.controller;
 
 import com.ztrios.etarms.identity.dto.*;
 import com.ztrios.etarms.identity.entity.RefreshToken;
-import com.ztrios.etarms.identity.entity.User;
-import com.ztrios.etarms.identity.repository.UserRepository;
-import com.ztrios.etarms.identity.security.CustomUserDetailsService;
-import com.ztrios.etarms.identity.security.JwtProvider;
 import com.ztrios.etarms.identity.service.AuthService;
 import com.ztrios.etarms.identity.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final RefreshTokenService refreshTokenService;
-    private final UserRepository userRepository;
     private final AuthService authService;
 
     /*

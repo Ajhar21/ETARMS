@@ -2,16 +2,23 @@ package com.ztrios.etarms.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
-@ControllerAdvice
+//@ControllerAdvice(annotations = RestController.class)
+//        (basePackages = "com.ztrios.etarms.employee.controller.EmployeeController.class")
+@RestControllerAdvice("com.ztrios.etarms")
+//@ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     //add maven dependency org.hibernate.validator artifactId: hibernate-validator for this exception to be worked
@@ -153,7 +160,8 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        // log.error("Unhandled exception", ex);
+        log.error("Unhandled exception", ex);
+
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ErrorResponse.of(
@@ -164,5 +172,31 @@ public class GlobalExceptionHandler {
                 )
         );
     }
+
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ErrorResponse> handleUnhandledException(
+//            Exception ex,
+//            HttpServletRequest request
+//    ) {
+//        String path = request.getRequestURI();
+//
+//        // 🔹 Let Swagger handle its own exceptions
+//        if (path.startsWith("/v3/api-docs")
+//                || path.startsWith("/swagger-ui")
+//                || path.startsWith("/swagger-ui.html")) {
+//            throw new RuntimeException(ex);
+//        }
+//
+//        // log.error("Unhandled exception", ex);
+//
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+//                ErrorResponse.of(
+//                        500,
+//                        "Internal Server Error",
+//                        "An unexpected error occurred. Please contact support if the issue persists.",
+//                        path
+//                )
+//        );
+//    }
 
 }

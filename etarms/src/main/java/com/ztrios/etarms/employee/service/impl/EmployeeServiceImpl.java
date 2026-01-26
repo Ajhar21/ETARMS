@@ -18,6 +18,8 @@ import com.ztrios.etarms.employee.service.CloudinaryService;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import com.ztrios.etarms.employee.util.EmployeeIdGenerator;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,11 +27,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final CloudinaryService cloudinaryService;
@@ -203,6 +208,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         validateImage(file);
 
+        log.warn("after validate {}", file);
+
+
         String photoUrl = cloudinaryService.uploadEmployeeImage(employeeId, file);
 
         employee.setPhotoUrl(photoUrl);
@@ -219,21 +227,46 @@ public class EmployeeServiceImpl implements EmployeeService {
         return photoUrl;
     }
 
+//    private void validateImage(MultipartFile file) {
+//        if (file.isEmpty()) {
+////            throw new IllegalArgumentException("File is empty");
+//            throw new InvalidFileException("File is empty");
+//        }
+//
+//        if (file.getSize() > 2 * 1024 * 1024) { // 2MB limit
+////            throw new IllegalArgumentException("File size exceeds 2MB");
+//            throw new InvalidFileException("File size exceeds 2MB");
+//        }
+//
+//        String contentType = file.getContentType();
+//        log.warn("contentType : {}", contentType);
+//
+//        if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+
+    /// /            throw new IllegalArgumentException("Only JPEG or PNG images are allowed");
+//            throw new InvalidFileException("Only JPEG or PNG images are allowed");
+//        }
+//    }
     private void validateImage(MultipartFile file) {
         if (file.isEmpty()) {
-//            throw new IllegalArgumentException("File is empty");
             throw new InvalidFileException("File is empty");
         }
 
-        if (file.getSize() > 2 * 1024 * 1024) { // 2MB limit
-//            throw new IllegalArgumentException("File size exceeds 2MB");
+        if (file.getSize() > 2 * 1024 * 1024) {
             throw new InvalidFileException("File size exceeds 2MB");
         }
 
-        String contentType = file.getContentType();
-        if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
-//            throw new IllegalArgumentException("Only JPEG or PNG images are allowed");
-            throw new InvalidFileException("Only JPEG or PNG images are allowed");
+        try (InputStream is = file.getInputStream()) {
+            Tika tika = new Tika();
+            String detectedType = tika.detect(is);
+
+            log.warn("Detected content type: {}", detectedType);
+
+            if (!"image/jpeg".equals(detectedType) && !"image/png".equals(detectedType)) {
+                throw new InvalidFileException("Only JPEG or PNG images are allowed");
+            }
+        } catch (IOException e) {
+            throw new InvalidFileException("Failed to read file content");
         }
     }
 
