@@ -2,6 +2,7 @@ package com.ztrios.etarms.identity.service;
 
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
+import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.identity.entity.User;
 import com.ztrios.etarms.identity.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
