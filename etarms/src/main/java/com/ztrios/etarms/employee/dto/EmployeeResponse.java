@@ -1,9 +1,11 @@
 package com.ztrios.etarms.employee.dto;
 
 import com.ztrios.etarms.employee.enums.EmploymentStatus;
+import lombok.Builder;
 
 import java.time.Instant;
 
+@Builder
 public record EmployeeResponse(
         String employeeId,
         String firstName,
@@ -17,4 +19,6 @@ public record EmployeeResponse(
         String thumbnailUrl,   // 150x150 thumbnail
         Instant createdAt,
         Instant updatedAt
-) {}
+) {
+
+}

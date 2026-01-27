@@ -3,6 +3,7 @@ package com.ztrios.etarms.attendance.service.impl;
 import com.ztrios.etarms.attendance.dto.*;
 import com.ztrios.etarms.attendance.entity.Attendance;
 import com.ztrios.etarms.attendance.enums.AttendanceStatus;
+import com.ztrios.etarms.attendance.mapper.AttendanceMapper;
 import com.ztrios.etarms.attendance.repository.AttendanceRepository;
 import com.ztrios.etarms.attendance.service.AttendanceService;
 import com.ztrios.etarms.audit.model.AuditAction;
@@ -12,6 +13,7 @@ import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.entity.Employee;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,22 +22,25 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
     private final AuditService auditService;
+    private final AttendanceMapper attendanceMapper;
 
-    public AttendanceServiceImpl(AttendanceRepository attendanceRepository,
-                                 EmployeeRepository employeeRepository, AuditService auditService) {
-        this.attendanceRepository = attendanceRepository;
-        this.employeeRepository = employeeRepository;
-        this.auditService = auditService;
-    }
+//    public AttendanceServiceImpl(AttendanceRepository attendanceRepository,
+//                                 EmployeeRepository employeeRepository, AuditService auditService, AttendanceMapper attendanceMapper) {
+//        this.attendanceRepository = attendanceRepository;
+//        this.employeeRepository = employeeRepository;
+//        this.auditService = auditService;
+//        this.attendanceMapper=attendanceMapper;
+//    }
 
     @Override
     @Transactional
-    public AttendanceCheckInResponse checkIn(AttendanceCheckInRequest request) {
+    public AttendanceCheckInResponse checkIn(AttendanceRequest request) {
         // Resolve Employee
         Employee employee = employeeRepository.findByEmployeeId(request.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
@@ -55,7 +60,9 @@ public class AttendanceServiceImpl implements AttendanceService {
                 });
 
         // Create attendance
-        Attendance attendance = new Attendance(employee, today, now, AttendanceStatus.INCOMPLETE);
+//        Attendance attendance = new Attendance(employee, today, now, AttendanceStatus.INCOMPLETE);
+        Attendance attendance = attendanceMapper.mapToEntity(request, employee);
+
         attendanceRepository.save(attendance);
 
         auditService.log(
@@ -66,12 +73,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         );
 
 
-        return new AttendanceCheckInResponse(employee.getEmployeeId(), attendance.getCheckInTime());
+//        return new AttendanceCheckInResponse(employee.getEmployeeId(), attendance.getCheckInTime());
+        return attendanceMapper.toCheckInResponse(attendance);
     }
 
     @Override
     @Transactional
-    public AttendanceCheckOutResponse checkOut(AttendanceCheckOutRequest request) {
+    public AttendanceCheckOutResponse checkOut(AttendanceRequest request) {
         Employee employee = employeeRepository.findByEmployeeId(request.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
@@ -91,12 +99,13 @@ public class AttendanceServiceImpl implements AttendanceService {
                 "Employee " + employee.getEmployeeId() + " Employee checked out at " + openAttendance.getCheckOutTime()
         );
 
-        return new AttendanceCheckOutResponse(
-                employee.getEmployeeId(),
-                openAttendance.getCheckInTime(),
-                openAttendance.getCheckOutTime(),
-                openAttendance.getWorkingMinutes()
-        );
+//        return new AttendanceCheckOutResponse(
+//                employee.getEmployeeId(),
+//                openAttendance.getCheckInTime(),
+//                openAttendance.getCheckOutTime(),
+//                openAttendance.getWorkingMinutes()
+//        );
+        return attendanceMapper.toCheckOutResponse(openAttendance);
     }
 //
 //    @Override
@@ -143,13 +152,17 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .findByEmployeeAndAttendanceDateBetweenOrderByAttendanceDateAsc(employee, startDate, endDate, pageable);
 
         // Map entities to DTOs
-        return attendancePage.map(att -> new AttendanceHistoryResponse(
-                employee.getEmployeeId(),
-                att.getAttendanceDate(),
-                att.getCheckInTime(),
-                att.getCheckOutTime(),
-                att.getWorkingMinutes(),
-                att.getAttendanceStatus().name()
-        ));
+//        return attendancePage.map(att -> new AttendanceHistoryResponse(
+//                employee.getEmployeeId(),
+//                att.getAttendanceDate(),
+//                att.getCheckInTime(),
+//                att.getCheckOutTime(),
+//                att.getWorkingMinutes(),
+//                att.getAttendanceStatus().name()
+//        ));
+
+//        return attendancePage.map(att -> attendanceMapper.toHistoryResponse(att));
+        return attendancePage.map(attendanceMapper::toHistoryResponse);
+
     }
 }

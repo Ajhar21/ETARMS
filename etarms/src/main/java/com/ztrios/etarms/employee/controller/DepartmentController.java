@@ -1,5 +1,6 @@
 package com.ztrios.etarms.employee.controller;
 
+import com.ztrios.etarms.common.response.ApiResponse;
 import com.ztrios.etarms.employee.dto.DepartmentRequest;
 import com.ztrios.etarms.employee.dto.DepartmentResponse;
 import com.ztrios.etarms.employee.service.DepartmentService;
@@ -27,34 +28,54 @@ public class DepartmentController {
     // ===================== GET ALL Departments =====================
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<List<DepartmentResponse>> list() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<ApiResponse<List<DepartmentResponse>>> depList() {
+
+        List<DepartmentResponse> response = service.getAll();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(),
+                        "Departments retrieved successfully",
+                        response));
     }
 
     // ===================== GET Department By departmentId=====================
     @GetMapping("/{departmentId}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<DepartmentResponse> get(@PathVariable String departmentId) {
-        return ResponseEntity.ok(service.getByDepartmentId(departmentId));
+    public ResponseEntity<ApiResponse<DepartmentResponse>> get(@PathVariable String departmentId) {
+        DepartmentResponse response = service.getByDepartmentId(departmentId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(),
+                        "Department retrieved successfully",
+                        response));
     }
 
     // ===================== CREATE Department=====================
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<DepartmentResponse> create(
+    public ResponseEntity<ApiResponse<DepartmentResponse>> create(
             @Valid @RequestBody DepartmentRequest request) {
+
+        DepartmentResponse response = service.create(request);
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.create(request));
+                .body(ApiResponse.success(HttpStatus.CREATED.value(),
+                        "Department created successfully",
+                        response));
     }
 
     // ===================== UPDATE Department=====================
     @PutMapping("/{departmentId}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<DepartmentResponse> update(
+    public ResponseEntity<ApiResponse<DepartmentResponse>> update(
             @PathVariable
             @Pattern(regexp = "dep\\d{3}", message = "Invalid department ID") String departmentId,  //not good practice to use it for path variable
             @Valid @RequestBody DepartmentRequest request) {
-        return ResponseEntity.ok(service.update(departmentId, request));
+
+        DepartmentResponse response = service.update(departmentId, request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(),
+                        "Department updated successfully",
+                        response));
     }
 
     // ===================== DELETE Department=====================

@@ -1,8 +1,8 @@
 package com.ztrios.etarms.attendance.service;
 
-import com.ztrios.etarms.attendance.dto.AttendanceCheckInRequest;
+import com.ztrios.etarms.attendance.dto.AttendanceRequest;
 import com.ztrios.etarms.attendance.dto.AttendanceCheckInResponse;
-import com.ztrios.etarms.attendance.dto.AttendanceCheckOutRequest;
+import com.ztrios.etarms.attendance.dto.AttendanceRequest;
 import com.ztrios.etarms.attendance.dto.AttendanceCheckOutResponse;
 import com.ztrios.etarms.attendance.dto.AttendanceHistoryRequest;
 import com.ztrios.etarms.attendance.dto.AttendanceHistoryResponse;
@@ -21,7 +21,7 @@ public interface AttendanceService {
      * - Only if no open attendance exists today
      * - Employee must exist and be ACTIVE
      */
-    AttendanceCheckInResponse checkIn(AttendanceCheckInRequest request);
+    AttendanceCheckInResponse checkIn(AttendanceRequest request);
 
     /**
      * Daily Check-Out
@@ -31,7 +31,7 @@ public interface AttendanceService {
      * - Only if an open attendance exists
      * - Check-out must be after check-in
      */
-    AttendanceCheckOutResponse checkOut(AttendanceCheckOutRequest request);
+    AttendanceCheckOutResponse checkOut(AttendanceRequest request);
 
     /**
      * Fetch attendance history

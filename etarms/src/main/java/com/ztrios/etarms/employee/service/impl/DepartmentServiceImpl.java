@@ -7,6 +7,7 @@ import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.dto.DepartmentRequest;
 import com.ztrios.etarms.employee.dto.DepartmentResponse;
 import com.ztrios.etarms.employee.entity.Department;
+import com.ztrios.etarms.employee.mapper.DepartmentMapper;
 import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.employee.service.DepartmentService;
 import com.ztrios.etarms.employee.util.DepartmentIdGenerator;
@@ -27,6 +28,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final JdbcTemplate jdbcTemplate;
     //    @Autowired
     private final AuditService auditService;
+    private final DepartmentMapper departmentMapper;
 
     // ===================== CREATE Department =====================
     @Override
@@ -37,8 +39,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new InvalidBusinessStateException("Department already exists");
         }
 
-        Long seq = jdbcTemplate.queryForObject(
-                "SELECT nextval('department_seq')", Long.class);
+//        Long seq = jdbcTemplate.queryForObject(
+//                "SELECT nextval('department_seq')", Long.class);
 
 //        Department dept = Department.builder()
 //                .departmentId(DepartmentIdGenerator.nextId(seq))
@@ -46,10 +48,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 //                .description(request.getDescription())
 //                .build();
 
-        Department dept = new Department(
-                DepartmentIdGenerator.nextId(seq),
-                request.name(),
-                request.description());
+        Department dept = departmentMapper.mapToEntity(request);
 
         repository.save(dept);
 
@@ -60,14 +59,15 @@ public class DepartmentServiceImpl implements DepartmentService {
                 "Department created: " + dept.getName()
         );
 
-        return map(dept);
+        return departmentMapper.mapToResponse(dept);
     }
 
     // ===================== GET Department By departmentId=====================
     @Override
     public DepartmentResponse getByDepartmentId(String departmentId) {
         return repository.findByDepartmentId(departmentId)
-                .map(this::map)
+//                .map(this::map)
+                .map(departmentMapper::mapToResponse)
 //                .orElseThrow(() -> new RuntimeException("Department not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
 
@@ -78,7 +78,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     public List<DepartmentResponse> getAll() {
         return repository.findAll()
                 .stream()
-                .map(this::map)
+//                .map(this::map)
+                .map(departmentMapper::mapToResponse)
                 .toList();
     }
 
@@ -100,7 +101,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 "Department updated: " + dept.getName()
         );
 
-        return map(dept);
+        return departmentMapper.mapToResponse(dept);
     }
 
     // ===================== DELETE Department =====================
@@ -123,11 +124,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         repository.delete(dept);
     }
 
-    private DepartmentResponse map(Department dept) {
-        DepartmentResponse res = new DepartmentResponse();
-        res.setDepartmentId(dept.getDepartmentId());
-        res.setName(dept.getName());
-        res.setDescription(dept.getDescription());
-        return res;
-    }
+//    private DepartmentResponse map(Department dept) {
+//        DepartmentResponse res = new DepartmentResponse();
+//        res.setDepartmentId(dept.getDepartmentId());
+//        res.setName(dept.getName());
+//        res.setDescription(dept.getDescription());
+//        return res;
+//    }
 }

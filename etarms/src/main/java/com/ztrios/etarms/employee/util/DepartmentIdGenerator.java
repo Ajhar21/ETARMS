@@ -1,10 +1,17 @@
 package com.ztrios.etarms.employee.util;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
 public class DepartmentIdGenerator {
 
-    private DepartmentIdGenerator() {}
+    private final JdbcTemplate jdbcTemplate;
 
-    public static String nextId(long seq) {
-        return String.format("dep%03d", seq);
+    public String generate() {
+        Long seq = jdbcTemplate.queryForObject("SELECT nextval('department_seq')", Long.class);
+        return "dep" + String.format("%03d", seq);
     }
 }
