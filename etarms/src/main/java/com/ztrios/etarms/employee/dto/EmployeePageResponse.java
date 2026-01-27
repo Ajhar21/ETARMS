@@ -1,7 +1,10 @@
 package com.ztrios.etarms.employee.dto;
 
+import lombok.Builder;
+
 import java.util.List;
 
+@Builder
 public record EmployeePageResponse(
 
         List<EmployeeResponse> content,
@@ -13,4 +16,5 @@ public record EmployeePageResponse(
 
         int pageSize,
         boolean last
-) {}
+) {
+}

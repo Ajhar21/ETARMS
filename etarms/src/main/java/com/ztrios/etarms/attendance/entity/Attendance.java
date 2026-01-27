@@ -1,5 +1,6 @@
 package com.ztrios.etarms.attendance.entity;
 
+import com.ztrios.etarms.common.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -95,10 +96,10 @@ public class Attendance {
      */
     public void checkOut(LocalDateTime checkOutTime) {
         if (this.checkOutTime != null) {
-            throw new IllegalStateException("Attendance already checked out");
+            throw new BusinessException("Attendance already checked out");
         }
         if (checkOutTime.isBefore(this.checkInTime)) {
-            throw new IllegalArgumentException("Check-out time cannot be before check-in");
+            throw new BusinessException("Check-out time cannot be before check-in");
         }
         this.checkOutTime = checkOutTime;
         this.workingMinutes = (int) java.time.Duration.between(this.checkInTime, this.checkOutTime).toMinutes();

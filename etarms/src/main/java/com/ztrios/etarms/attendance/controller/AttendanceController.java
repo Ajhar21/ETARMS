@@ -2,12 +2,14 @@ package com.ztrios.etarms.attendance.controller;
 
 import com.ztrios.etarms.attendance.dto.*;
 import com.ztrios.etarms.attendance.service.AttendanceService;
+import com.ztrios.etarms.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,11 +32,15 @@ public class AttendanceController {
      */
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
     @PostMapping("/check-in")
-    public ResponseEntity<AttendanceCheckInResponse> checkIn(
-            @Valid @RequestBody AttendanceCheckInRequest request
+    public ResponseEntity<ApiResponse<AttendanceCheckInResponse>> checkIn(
+            @Valid @RequestBody AttendanceRequest request
     ) {
         AttendanceCheckInResponse response = attendanceService.checkIn(request);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.status(HttpStatus.CREATED).
+                body(ApiResponse.success(HttpStatus.CREATED.value(),
+                        "Check In Successful",
+                        response));
     }
 
     /**
@@ -42,11 +48,15 @@ public class AttendanceController {
      */
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
     @PostMapping("/check-out")
-    public ResponseEntity<AttendanceCheckOutResponse> checkOut(
-            @Valid @RequestBody AttendanceCheckOutRequest request
+    public ResponseEntity<ApiResponse<AttendanceCheckOutResponse>> checkOut(
+            @Valid @RequestBody AttendanceRequest request
     ) {
         AttendanceCheckOutResponse response = attendanceService.checkOut(request);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.status(HttpStatus.OK).
+                body(ApiResponse.success(HttpStatus.OK.value(),
+                        "Check Out Successful",
+                        response));
     }
 
     /**
@@ -56,7 +66,7 @@ public class AttendanceController {
      */
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/history")
-    public ResponseEntity<Page<AttendanceHistoryResponse>> getHistory(
+    public ResponseEntity<ApiResponse<Page<AttendanceHistoryResponse>>> getHistory(
             @RequestParam String employeeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -66,6 +76,10 @@ public class AttendanceController {
         AttendanceHistoryRequest request = new AttendanceHistoryRequest(employeeId, startDate, endDate);
         Pageable pageable = PageRequest.of(page, size);
         Page<AttendanceHistoryResponse> response = attendanceService.getHistory(request, pageable);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.status(HttpStatus.OK).
+                body(ApiResponse.success(HttpStatus.OK.value(),
+                        "Attendance history successfully retrieved",
+                        response));
     }
 }

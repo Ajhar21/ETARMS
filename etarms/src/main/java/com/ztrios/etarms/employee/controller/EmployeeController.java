@@ -1,10 +1,12 @@
 package com.ztrios.etarms.employee.controller;
 
+import com.ztrios.etarms.common.response.ApiResponse;
 import com.ztrios.etarms.employee.dto.EmployeeCreateRequest;
 import com.ztrios.etarms.employee.dto.EmployeePageResponse;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,36 +25,66 @@ public class EmployeeController {
     // ===================== GET ALL Employees =====================
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping
-    public ResponseEntity<EmployeePageResponse> employeeList(
+    public ResponseEntity<ApiResponse<EmployeePageResponse>> employeeList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,asc") String sort
     ) {
-        EmployeePageResponse response=service.getEmployees(page,size,sort);
-        return ResponseEntity.ok(response);
+        EmployeePageResponse response = service.getEmployees(page, size, sort);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Employees page retrieved successfully",
+                        response));
     }
 
     // ===================== GET Employee By employeeId =====================
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/{employeeId}")
-    public EmployeeResponse get(@PathVariable String employeeId) {
-        return service.getByEmployeeId(employeeId);
+    public ResponseEntity<ApiResponse<EmployeeResponse>> get(@PathVariable String employeeId) {
+        EmployeeResponse response = service.getByEmployeeId(employeeId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Employee retrieved successfully",
+                        response));
     }
 
     // ===================== CREATE Employee =====================
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+//    @PostMapping
+//    public EmployeeResponse create(@Valid @RequestBody EmployeeCreateRequest request) {
+//        return service.create(request);
+//    }
+
     @PostMapping
-    public EmployeeResponse create(@Valid @RequestBody EmployeeCreateRequest request) {
-        return service.create(request);
+    public ResponseEntity<ApiResponse<EmployeeResponse>> createEmployee(
+            @RequestBody @Valid EmployeeCreateRequest request
+    ) {
+        EmployeeResponse response = service.create(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        HttpStatus.CREATED.value(),
+                        "Employee created successfully",
+                        response
+                ));
     }
 
     // ===================== UPDATE Employee =====================
     @PutMapping("/{employeeId}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<EmployeeResponse> update(
+    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
             @PathVariable String employeeId,
             @Valid @RequestBody EmployeeCreateRequest request) {
-        return ResponseEntity.ok(service.update(employeeId, request));
+
+        EmployeeResponse response = service.update(employeeId, request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Employee Updated successfully",
+                        response
+                ));
     }
 
     // ===================== DELETE Employee =====================
@@ -66,11 +98,16 @@ public class EmployeeController {
     // ===================== POST Employee Image=====================
     @PostMapping("/{id}/photo")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<String> uploadPhoto(
+    public ResponseEntity<ApiResponse<String>> uploadPhoto(
             @PathVariable("id") String employeeId,
             @Valid @RequestParam("file") MultipartFile file
     ) {
         String photoUrl = service.uploadEmployeePhoto(employeeId, file);
-        return ResponseEntity.ok(photoUrl);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Employee Image Uploaded Successfully",
+                        photoUrl
+                ));
     }
 }

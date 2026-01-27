@@ -11,13 +11,14 @@ import com.ztrios.etarms.employee.dto.EmployeePageResponse;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
 import com.ztrios.etarms.employee.entity.Department;
 import com.ztrios.etarms.employee.entity.Employee;
-import com.ztrios.etarms.employee.enums.EmploymentStatus;
+import com.ztrios.etarms.employee.mapper.EmployeeMapper;
 import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import com.ztrios.etarms.employee.service.CloudinaryService;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import com.ztrios.etarms.employee.util.EmployeeIdGenerator;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
@@ -35,22 +36,23 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final CloudinaryService cloudinaryService;
     private final EmployeeRepository repository;
     private final DepartmentRepository departmentRepository;
-    private final EmployeeIdGenerator idGenerator;
     private final AuditService auditService;
+    private final EmployeeMapper employeeMapper;
 
-    public EmployeeServiceImpl(CloudinaryService cloudinaryService, EmployeeRepository repository, DepartmentRepository departmentRepository,
-                               EmployeeIdGenerator idGenerator, AuditService auditService) {
-        this.cloudinaryService = cloudinaryService;
-        this.repository = repository;
-        this.departmentRepository = departmentRepository;
-        this.idGenerator = idGenerator;
-        this.auditService = auditService;
-    }
+//    public EmployeeServiceImpl(CloudinaryService cloudinaryService, EmployeeRepository repository, DepartmentRepository departmentRepository,
+//                               EmployeeIdGenerator idGenerator, AuditService auditService) {
+//        this.cloudinaryService = cloudinaryService;
+//        this.repository = repository;
+//        this.departmentRepository = departmentRepository;
+//        this.idGenerator = idGenerator;
+//        this.auditService = auditService;
+//    }
 
     // ===================== CREATE Employee =====================
     @Override
@@ -75,16 +77,18 @@ public class EmployeeServiceImpl implements EmployeeService {
                         )
                 );
 
-        Employee employee = new Employee(
-                idGenerator.generate(),
-                request.firstName(),
-                request.lastName(),
-                request.email(),
-                request.phoneNumber(),
-                request.jobTitle(),
-                EmploymentStatus.ACTIVE,
-                department
-        );
+//        Employee employee = new Employee(
+//                idGenerator.generate(),
+//                request.firstName(),
+//                request.lastName(),
+//                request.email(),
+//                request.phoneNumber(),
+//                request.jobTitle(),
+//                EmploymentStatus.ACTIVE,
+//                department
+//        );
+
+        Employee employee = employeeMapper.mapToEntity(request, department);
 
         repository.save(employee);
 
@@ -95,13 +99,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 //                "Employee created with name " + employee.getFirstName()+" "+ employee.getLastName()
 //        );
 //
-        return mapToResponse(employee);
+        return employeeMapper.mapToResponse(employee);
     }
 
     // ===================== UPDATE Employee =====================
     @Override
     public EmployeeResponse update(String employeeId, EmployeeCreateRequest request) {
-        Employee emp = repository.findByEmployeeId(employeeId)
+        Employee employee = repository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         Department department = departmentRepository
@@ -112,7 +116,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 //                                "Invalid department Name: " + request.departmentName()
                         new ResourceNotFoundException("Invalid department Name: " + request.departmentName()));
 
-        emp.update(
+        employee.update(
                 request.firstName(),
                 request.lastName(),
                 request.email(),
@@ -121,6 +125,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 department,
                 request.employmentStatus());
 
+
 //        auditService.log(
 //                AuditAction.UPDATE_EMPLOYEE,
 //                "Employee",
@@ -128,7 +133,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 //                "Employee updated: " + emp.getFirstName()+" "+ emp.getLastName()
 //        );
 
-        return mapToResponse(emp);
+        return employeeMapper.mapToResponse(employee);
     }
 
     // ===================== DELETE Employee =====================
@@ -153,7 +158,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse getByEmployeeId(String employeeId) {
         return repository.findByEmployeeId(employeeId)
-                .map(this::mapToResponse)
+                .map(employeeMapper::mapToResponse)
 //                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
     }
@@ -181,18 +186,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         List<EmployeeResponse> content = employeePage.getContent()
                 .stream()
-                .map(this::mapToResponse)
+//                .map(this::mapToResponse)
+                .map(employeeMapper::mapToResponse)
                 .collect(Collectors.toList());
 
-
-        return new EmployeePageResponse(
-                content,
-                employeePage.getTotalElements(),
-                employeePage.getTotalPages(),
-                employeePage.getNumber(),
-                employeePage.getSize(),
-                employeePage.isLast()
-        );
+        return EmployeePageResponse.builder()
+                .content(content)
+                .totalElements(employeePage.getTotalElements())
+                .totalPages(employeePage.getTotalPages())
+                .pageNumber(employeePage.getNumber())
+                .pageSize(employeePage.getSize())
+                .last(employeePage.isLast())
+                .build();
     }
 
     @Transactional
@@ -270,24 +275,24 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
-    private EmployeeResponse mapToResponse(Employee e) {
-        return new EmployeeResponse(
-                e.getEmployeeId(),
-                e.getFirstName(),
-                e.getLastName(),
-                e.getEmail(),
-                e.getPhoneNumber(),
-                e.getJobTitle(),
-                e.getEmploymentStatus(),
-//                e.getDepartmentId(),
-                e.getDepartment().getDepartmentId(),
-                e.getPhotoUrl(),
-//                thumbnailUrl,
-                e.getPhotoUrl() != null ? cloudinaryService.getThumbnailUrl(e.getEmployeeId()) : null,
-                e.getCreatedAt(),
-                e.getUpdatedAt()
-        );
-    }
+//    private EmployeeResponse mapToResponse(Employee e) {
+//        return new EmployeeResponse(
+//                e.getEmployeeId(),
+//                e.getFirstName(),
+//                e.getLastName(),
+//                e.getEmail(),
+//                e.getPhoneNumber(),
+//                e.getJobTitle(),
+//                e.getEmploymentStatus(),
+////                e.getDepartmentId(),
+//                e.getDepartment().getDepartmentId(),
+//                e.getPhotoUrl(),
+////                thumbnailUrl,
+//                e.getPhotoUrl() != null ? cloudinaryService.getThumbnailUrl(e.getEmployeeId()) : null,
+//                e.getCreatedAt(),
+//                e.getUpdatedAt()
+//        );
+//    }
 
 
 }
