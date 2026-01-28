@@ -1,5 +1,6 @@
 package com.ztrios.etarms.identity.controller;
 
+import com.ztrios.etarms.common.response.ApiResponse;
 import com.ztrios.etarms.identity.dto.*;
 import com.ztrios.etarms.identity.entity.RefreshToken;
 import com.ztrios.etarms.identity.service.AuthService;
@@ -7,6 +8,7 @@ import com.ztrios.etarms.identity.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,84 +20,41 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final AuthService authService;
 
-    /*
+    // ==================== LOGIN ============================
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request, HttpServletRequest httpRequest) {
-
-        try {
-            // Authenticate credentials
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()
-                    )
-            );
-
-            // Load user details
-            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-
-//            // Generate JWT
-//            String token = jwtProvider.generateToken(
-//                    userDetails.getUsername(),
-//                    userDetails.getAuthorities().iterator().next().getAuthority()
-//            );
-//
-//            // Return response
-//            return ResponseEntity.ok(
-//                    new AuthResponse(token, userDetails.getUsername(),
-//                            userDetails.getAuthorities().iterator().next().getAuthority())
-//            );
-
-            // Load User entity from DB (needed to create refresh token)
-            User user = userRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            // Generate access token
-            String accessToken = jwtProvider.generateToken(
-                    userDetails.getUsername(),
-                    userDetails.getAuthorities().iterator().next().getAuthority()
-            );
-
-            // Extract IP and User-Agent for auditing
-            String clientIp = httpRequest.getRemoteAddr();
-            String userAgent = httpRequest.getHeader("User-Agent");
-
-            // Create refresh token
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, clientIp, userAgent);
-
-            // Return response with record
-            AuthResponse response = new AuthResponse(
-                    accessToken,
-                    refreshToken.getToken(),
-                    user.getUsername(),
-                    user.getRole().getName()
-            );
-
-            return ResponseEntity.ok(response);
-
-        } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401).build();
-        }
-    }
-*/
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody AuthRequest request,
             HttpServletRequest httpRequest
     ) {
         AuthResponse response = authService.login(request, httpRequest);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Login successful",
+                        response
+                )
+        );
     }
 
+    // ==================== REFRESH TOKEN ============================
     @PostMapping("/refresh-token")
-    public ResponseEntity<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+
         TokenResponse response = authService.refreshAccessToken(request);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Refresh token generated successfully",
+                        response
+                )
+        );
     }
 
+    // ==================== LOGOUT ============================
     @PostMapping("/logout")
-    public ResponseEntity<LogoutResponse> logout(@Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<ApiResponse<LogoutResponse>> logout(@Valid @RequestBody LogoutRequest request) {
 
         // Fetch the refresh token entity by token string
         RefreshToken refreshToken = refreshTokenService.getByToken(request.refreshToken());
@@ -103,18 +62,34 @@ public class AuthController {
         // Revoke using existing method
         refreshTokenService.revokeToken(refreshToken, "user logout");
 
+        LogoutResponse response = new LogoutResponse("Logout successful", 1);
         // Directly return record without creating a local variable
-        return ResponseEntity.ok(new LogoutResponse("Logout successful", 1));
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Logout successful",
+                        response
+                )
+        );
     }
 
+    // ==================== LOGOUT ALL ============================
     @PostMapping("/logout-all")
-    public ResponseEntity<LogoutResponse> logoutAll(@Valid @RequestParam String username) {
+    public ResponseEntity<ApiResponse<LogoutResponse>> logoutAll(@Valid @RequestParam String username) {
 
         // Revoke all refresh tokens for this user, returns number of revoked tokens
         int revokedCount = refreshTokenService.revokeAllTokensForUser(username, "user logout from all devices");
 
+        LogoutResponse response = new LogoutResponse("All devices logout successfully", revokedCount);
+
         // Directly return record
-        return ResponseEntity.ok(new LogoutResponse("All devices logged out successfully", revokedCount));
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "All devices logout successfully",
+                        response
+                )
+        );
     }
 
 }

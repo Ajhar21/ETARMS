@@ -9,11 +9,8 @@ public record EmployeePageResponse(
 
         List<EmployeeResponse> content,
         long totalElements,
-
         int totalPages,
-
         int pageNumber,
-
         int pageSize,
         boolean last
 ) {

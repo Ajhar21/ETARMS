@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,20 +30,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
      * Fetch attendance history for an employee within a date range
      * Can be used for reports
      */
-//    List<Attendance> findByEmployeeAndAttendanceDateBetween(Employee employee, LocalDate startDate, LocalDate endDate);
 
     Page<Attendance> findByEmployeeAndAttendanceDateBetweenOrderByAttendanceDateAsc(
             Employee employee, LocalDate startDate, LocalDate endDate, Pageable pageable);
-    /**
-     * Fetch all attendance records for a given date
-     * Optional: useful for daily reports or admin views
-     */
-    List<Attendance> findByAttendanceDate(LocalDate attendanceDate);
 
-    /**
-     * Optional: fetch monthly summary for an employee
-     * Can be implemented via custom query or service layer aggregation
-     */
-//    List<Attendance> findByEmployeeAndAttendanceDateBetweenOrderByAttendanceDateAsc(
-//            Employee employee, LocalDate startDate, LocalDate endDate);
 }

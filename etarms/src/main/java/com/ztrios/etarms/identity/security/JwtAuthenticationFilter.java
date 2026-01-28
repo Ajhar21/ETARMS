@@ -16,7 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-//@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,17 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         try {
-//            log.warn("Before execution");
             if (header != null && header.startsWith("Bearer ")) {
 
                 String token = header.substring(7);
 
-//                log.warn("Before execution11 {}", token);
-
                 // This method should throw exceptions for expired/malformed token
                 if (jwtProvider.validate(token)) {
-//                    log.warn("Inside execution");
-
                     String username = jwtProvider.getUsername(token);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -67,7 +61,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (AuthenticationException | IllegalArgumentException ex) {
-//            log.warn("inside catch");
             // Delegate to the entry point to produce professional JSON response
             jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationServiceException(ex.getMessage(), ex));
         }

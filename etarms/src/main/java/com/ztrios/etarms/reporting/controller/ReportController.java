@@ -1,9 +1,12 @@
 package com.ztrios.etarms.reporting.controller;
 
+import com.ztrios.etarms.common.response.ApiResponse;
 import com.ztrios.etarms.reporting.projection.MonthlyAttendanceSummaryProjection;
 import com.ztrios.etarms.reporting.service.ReportService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,12 +25,20 @@ public class ReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/attendance/monthly")
-    public List<MonthlyAttendanceSummaryProjection> getMonthlyAttendance(
+    public ResponseEntity<ApiResponse<List<MonthlyAttendanceSummaryProjection>>> getMonthlyAttendance(
             @RequestParam int year,
             @RequestParam int month,
             @RequestParam(required = false) String departmentId
     ) {
-        return reportService.getMonthlyReport(year, month, departmentId);
+        List<MonthlyAttendanceSummaryProjection> response = reportService.getMonthlyReport(year, month, departmentId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Monthly Attendance Summary has been successfully retrieved",
+                        response
+                )
+        );
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")

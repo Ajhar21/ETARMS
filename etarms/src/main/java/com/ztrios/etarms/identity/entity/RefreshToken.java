@@ -1,7 +1,6 @@
 package com.ztrios.etarms.identity.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -72,6 +71,5 @@ public class RefreshToken {
     protected void onCreate() {
         this.createdAt = Instant.now();
     }
-
 }
 

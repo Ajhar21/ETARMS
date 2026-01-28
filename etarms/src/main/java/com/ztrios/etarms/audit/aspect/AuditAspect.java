@@ -3,7 +3,6 @@ package com.ztrios.etarms.audit.aspect;
 import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.employee.dto.EmployeeResponse;
-import com.ztrios.etarms.employee.entity.Employee;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -57,7 +56,7 @@ public class AuditAspect {
                 AuditAction.DELETE_EMPLOYEE,
                 "Employee",
                 employeeId,
-                "Employee deleted " +employeeId
+                "Employee deleted " + employeeId
         );
     }
 

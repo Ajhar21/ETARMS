@@ -2,12 +2,16 @@ package com.ztrios.etarms.audit.model;
 
 public final class AuditAction {
 
-    private AuditAction() {}
+    private AuditAction() {
+    }
 
     /* =========================
        AUTH MODULE
        ========================= */
     public static final String LOGIN = "LOGIN";
+    public static final String REFRESH_TOKEN = "REFRESH_TOKEN";
+    public static final String LOGOUT = "LOGOUT";
+    public static final String LOGOUT_ALL = "LOGOUT_ALL";
 
 
     /* =========================
@@ -16,7 +20,6 @@ public final class AuditAction {
     public static final String CREATE_EMPLOYEE = "CREATE_EMPLOYEE";
     public static final String UPDATE_EMPLOYEE = "UPDATE_EMPLOYEE";
     public static final String DELETE_EMPLOYEE = "DELETE_EMPLOYEE";
-
     public static final String UPLOAD_EMPLOYEE_PHOTO = "UPLOAD_EMPLOYEE_PHOTO";
 
 

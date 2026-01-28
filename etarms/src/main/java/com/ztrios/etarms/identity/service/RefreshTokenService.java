@@ -30,13 +30,6 @@ public class RefreshTokenService {
      * Create new refresh token for a user
      */
     public RefreshToken createRefreshToken(User user, String ip, String userAgent) {
-//        RefreshToken token = new RefreshToken();
-//        token.setUser(user);
-//        token.setUserId(user.getId());
-//        token.setToken(UUID.randomUUID().toString());
-//        token.setExpiresAt(Instant.now().plus(refreshTokenDurationDays, ChronoUnit.DAYS));
-//        token.setCreatedByIp(ip);
-//        token.setUserAgent(userAgent);
 
         RefreshToken token = RefreshTokenMapper.toEntity(
                 user, UUID.randomUUID().toString(), Instant.now().plus(refreshTokenDurationDays, ChronoUnit.DAYS), ip, userAgent
@@ -77,15 +70,7 @@ public class RefreshTokenService {
     /**
      * Revoke all tokens for a user
      */
-//    public void revokeAllTokensForUser(User user, String reason) {
-//        List<RefreshToken> tokens = refreshTokenRepository.findAllByUserAndRevokedFalse(user);
-//        tokens.forEach(token -> {
-//            token.setRevoked(true);
-//            token.setRevokedReason(reason);
-//            token.setRevokedAt(Instant.now());
-//        });
-//        refreshTokenRepository.saveAll(tokens);
-//    }
+
     public int revokeAllTokensForUser(String userName, String reason) {
         // Fetch the user
         User user = userRepository.findByUsername(userName)

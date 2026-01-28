@@ -61,10 +61,6 @@ public class Attendance {
     @Column(name = "attendance_status", nullable = false, length = 20)
     private AttendanceStatus attendanceStatus;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "attendance_status", nullable = false, columnDefinition = "attendance_status_type")
-//    private AttendanceStatus attendanceStatus;
-
     @CreatedBy
     @Column(name = "created_by", nullable = false, updatable = false)
     private String createdBy;

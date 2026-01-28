@@ -8,14 +8,10 @@ public record EmployeeCreateRequest(
 
         @NotBlank String firstName,
         @NotBlank String lastName,
-
         @Email @NotBlank String email,
-
         @NotBlank String phoneNumber,
-
         @NotBlank String jobTitle,
-
-//        @NotBlank String departmentId
-        @NotBlank String departmentName, // or departmentId (public)
+        @NotBlank String departmentName,
         @NotNull EmploymentStatus employmentStatus
-) {}
+) {
+}

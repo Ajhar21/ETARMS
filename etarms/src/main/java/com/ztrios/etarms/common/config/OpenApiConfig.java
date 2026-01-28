@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Configuration;
 )
 public class OpenApiConfig {
 
-//    http://localhost:8080/swagger-ui.html
+    // swagger UI url:  http://localhost:8080/swagger-ui.html
 
     public static final String SECURITY_SCHEME_NAME = "BearerAuth";
 

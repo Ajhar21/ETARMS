@@ -22,7 +22,7 @@ public class ReportService {
     private final DepartmentRepository departmentRepository;
     private final AuditService auditService;
 
-
+    /*======================== Report generation =======================*/
     public List<MonthlyAttendanceSummaryProjection> getMonthlyReport(
             int year, int month, String departmentId
     ) {
@@ -45,6 +45,7 @@ public class ReportService {
         return attendanceReportRepository.getMonthlyAttendanceSummary(year, month, departmentId);
     }
 
+    /*======================== Export Report with generation =======================*/
     public void exportMonthlyAttendanceCsv(
             int year,
             int month,
