@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+// When converting this object to JSON, exclude any fields whose value is null
 @Getter
 public class ApiResponse<T> {
 
@@ -20,21 +21,5 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> success(int statusCode, String message, T data) {
         return new ApiResponse<>(statusCode, message, data);
     }
-
-//    public static <T> ApiResponse<T> error(int statusCode, String message, T data) {
-//        return new ApiResponse<>(statusCode, message, data);
-//    }
-
-//    public int getStatusCode() {
-//        return statusCode;
-//    }
-//
-//    public String getMessage() {
-//        return message;
-//    }
-//
-//    public T getData() {
-//        return data;
-//    }
 }
 

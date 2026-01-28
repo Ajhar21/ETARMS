@@ -2,7 +2,6 @@ package com.ztrios.etarms.attendance.service.impl;
 
 import com.ztrios.etarms.attendance.dto.*;
 import com.ztrios.etarms.attendance.entity.Attendance;
-import com.ztrios.etarms.attendance.enums.AttendanceStatus;
 import com.ztrios.etarms.attendance.mapper.AttendanceMapper;
 import com.ztrios.etarms.attendance.repository.AttendanceRepository;
 import com.ztrios.etarms.attendance.service.AttendanceService;
@@ -30,14 +29,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final AuditService auditService;
     private final AttendanceMapper attendanceMapper;
 
-//    public AttendanceServiceImpl(AttendanceRepository attendanceRepository,
-//                                 EmployeeRepository employeeRepository, AuditService auditService, AttendanceMapper attendanceMapper) {
-//        this.attendanceRepository = attendanceRepository;
-//        this.employeeRepository = employeeRepository;
-//        this.auditService = auditService;
-//        this.attendanceMapper=attendanceMapper;
-//    }
-
     @Override
     @Transactional
     public AttendanceCheckInResponse checkIn(AttendanceRequest request) {
@@ -60,7 +51,6 @@ public class AttendanceServiceImpl implements AttendanceService {
                 });
 
         // Create attendance
-//        Attendance attendance = new Attendance(employee, today, now, AttendanceStatus.INCOMPLETE);
         Attendance attendance = attendanceMapper.mapToEntity(request, employee);
 
         attendanceRepository.save(attendance);
@@ -72,8 +62,6 @@ public class AttendanceServiceImpl implements AttendanceService {
                 "Employee checked in at " + now
         );
 
-
-//        return new AttendanceCheckInResponse(employee.getEmployeeId(), attendance.getCheckInTime());
         return attendanceMapper.toCheckInResponse(attendance);
     }
 
@@ -99,37 +87,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                 "Employee " + employee.getEmployeeId() + " Employee checked out at " + openAttendance.getCheckOutTime()
         );
 
-//        return new AttendanceCheckOutResponse(
-//                employee.getEmployeeId(),
-//                openAttendance.getCheckInTime(),
-//                openAttendance.getCheckOutTime(),
-//                openAttendance.getWorkingMinutes()
-//        );
         return attendanceMapper.toCheckOutResponse(openAttendance);
     }
-//
-//    @Override
-//    public List<AttendanceHistoryResponse> getHistory(AttendanceHistoryRequest request) {
-//        Employee employee = employeeRepository.findByEmployeeId(request.employeeId())
-//                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-//
-//        LocalDate startDate = request.startDate() != null ? request.startDate() : LocalDate.MIN;
-//        LocalDate endDate = request.endDate() != null ? request.endDate() : LocalDate.MAX;
-//
-//        List<Attendance> attendanceList = attendanceRepository
-//                .findByEmployeeAndAttendanceDateBetweenOrderByAttendanceDateAsc(employee, startDate, endDate);
-//
-//        return attendanceList.stream()
-//                .map(a -> new AttendanceHistoryResponse(
-//                        employee.getEmployeeId(),
-//                        a.getAttendanceDate(),
-//                        a.getCheckInTime(),
-//                        a.getCheckOutTime(),
-//                        a.getWorkingMinutes() != null ? a.getWorkingMinutes() : 0,
-//                        a.getAttendanceStatus().name()
-//                ))
-//                .collect(Collectors.toList());
-//    }
 
     @Override
     public Page<AttendanceHistoryResponse> getHistory(AttendanceHistoryRequest request, Pageable pageable) {
@@ -151,17 +110,6 @@ public class AttendanceServiceImpl implements AttendanceService {
         Page<Attendance> attendancePage = attendanceRepository
                 .findByEmployeeAndAttendanceDateBetweenOrderByAttendanceDateAsc(employee, startDate, endDate, pageable);
 
-        // Map entities to DTOs
-//        return attendancePage.map(att -> new AttendanceHistoryResponse(
-//                employee.getEmployeeId(),
-//                att.getAttendanceDate(),
-//                att.getCheckInTime(),
-//                att.getCheckOutTime(),
-//                att.getWorkingMinutes(),
-//                att.getAttendanceStatus().name()
-//        ));
-
-//        return attendancePage.map(att -> attendanceMapper.toHistoryResponse(att));
         return attendancePage.map(attendanceMapper::toHistoryResponse);
 
     }

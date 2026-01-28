@@ -2,7 +2,6 @@ package com.ztrios.etarms.employee.entity;
 
 import com.ztrios.etarms.employee.enums.EmploymentStatus;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -160,9 +159,5 @@ public class Employee {
             this.employmentStatus = employmentStatus;
         }
     }
-
-//    public void setPhotoUrl(String photoUrl) {
-//        this.photoUrl = photoUrl;
-//    }
 
 }

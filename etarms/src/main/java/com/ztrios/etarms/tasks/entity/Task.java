@@ -42,7 +42,7 @@ public class Task {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id=UUID.randomUUID();
+    private UUID id = UUID.randomUUID();
 
     @Column(name = "task_id", length = 20, updatable = false, nullable = false, unique = true)
     private String taskId;
@@ -72,21 +72,21 @@ public class Task {
        Ownership & Responsibility
        =============================== */
 
-//    @Column(name = "assigned_to", nullable = false)
+    //    @Column(name = "assigned_to", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name="assigned_to",
+            name = "assigned_to",
             nullable = false,
-            foreignKey = @ForeignKey(name="fk_tasks_assigned_to")
+            foreignKey = @ForeignKey(name = "fk_tasks_assigned_to")
     )
     private Employee assignee;
 
-//    @Column(name = "manager_id", nullable = false)
+    //    @Column(name = "manager_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name="manager_id",
+            name = "manager_id",
             nullable = false,
-            foreignKey = @ForeignKey(name="fk_tasks_manager")
+            foreignKey = @ForeignKey(name = "fk_tasks_manager")
     )
     private User taskManager;
 
@@ -122,34 +122,24 @@ public class Task {
      * Domain constructor – enforces valid creation
      */
 
-    public Task(String taskId,String title, String description, TaskStatus status, TaskPriority priority, LocalDateTime deadline,
-                Employee assignee, User taskManager){
-        this.taskId=taskId;
-        this.title=title;
-        this.description=description;
-        this.status=status;
-        this.priority=priority;
-        this.deadline=deadline;
-        this.assignee=assignee;
-        this.taskManager=taskManager;
+    public Task(String taskId, String title, String description, TaskStatus status, TaskPriority priority, LocalDateTime deadline,
+                Employee assignee, User taskManager) {
+        this.taskId = taskId;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.priority = priority;
+        this.deadline = deadline;
+        this.assignee = assignee;
+        this.taskManager = taskManager;
     }
 
     public void setNewAssignee(Employee newAssignee) {
-        this.assignee=newAssignee;
+        this.assignee = newAssignee;
     }
 
     public void updateStatus(TaskStatus status) {
-        this.status=status;
+        this.status = status;
     }
 
-//    @PrePersist
-//    protected void onCreate() {
-//        this.createdAt = LocalDateTime.now();
-//        this.updatedAt = this.createdAt;
-//    }
-//
-//    @PreUpdate
-//    protected void onUpdate() {
-//        this.updatedAt = LocalDateTime.now();
-//    }
 }

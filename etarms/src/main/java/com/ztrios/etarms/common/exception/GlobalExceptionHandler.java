@@ -2,7 +2,6 @@ package com.ztrios.etarms.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -12,14 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
-//@ControllerAdvice(annotations = RestController.class)
-//        (basePackages = "com.ztrios.etarms.employee.controller.EmployeeController.class")
-@RestControllerAdvice("com.ztrios.etarms")
-//@ControllerAdvice
-@Slf4j
+@RestControllerAdvice("com.ztrios.etarms")  //explocitly mention base package
 public class GlobalExceptionHandler {
 
-    //add maven dependency org.hibernate.validator artifactId: hibernate-validator for this exception to be worked
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -41,7 +35,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    //add maven dependency org.hibernate.validator artifactId: hibernate-validator for this exception to be worked
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex,
@@ -102,27 +95,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    /*=============================
-     * already implemented in JwtAuthenticationEntryPoint
-     * JwtAuthentication never comes to controller, it is being handled by spring security before controller
-     =============================*/
-    /*
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(
-            AuthenticationException ex,
-            HttpServletRequest request
-    ) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                ErrorResponse.of(
-                        401,
-                        "Authentication Failed",
-                        "Invalid or expired authentication token",
-                        request.getRequestURI()
-                )
-        );
-    }
-     */
-
     @ExceptionHandler(ExternalServiceException.class)
     public ResponseEntity<ErrorResponse> handleExternalServiceException(
             ExternalServiceException ex,
@@ -158,9 +130,6 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        log.error("Unhandled exception", ex);
-
-
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ErrorResponse.of(
                         500,
@@ -170,31 +139,5 @@ public class GlobalExceptionHandler {
                 )
         );
     }
-
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<ErrorResponse> handleUnhandledException(
-//            Exception ex,
-//            HttpServletRequest request
-//    ) {
-//        String path = request.getRequestURI();
-//
-//        // 🔹 Let Swagger handle its own exceptions
-//        if (path.startsWith("/v3/api-docs")
-//                || path.startsWith("/swagger-ui")
-//                || path.startsWith("/swagger-ui.html")) {
-//            throw new RuntimeException(ex);
-//        }
-//
-//        // log.error("Unhandled exception", ex);
-//
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-//                ErrorResponse.of(
-//                        500,
-//                        "Internal Server Error",
-//                        "An unexpected error occurred. Please contact support if the issue persists.",
-//                        path
-//                )
-//        );
-//    }
 
 }

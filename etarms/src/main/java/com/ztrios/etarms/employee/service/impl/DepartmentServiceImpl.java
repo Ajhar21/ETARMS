@@ -10,10 +10,7 @@ import com.ztrios.etarms.employee.entity.Department;
 import com.ztrios.etarms.employee.mapper.DepartmentMapper;
 import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.employee.service.DepartmentService;
-import com.ztrios.etarms.employee.util.DepartmentIdGenerator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +22,6 @@ import java.util.List;
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository repository;
-    private final JdbcTemplate jdbcTemplate;
-    //    @Autowired
     private final AuditService auditService;
     private final DepartmentMapper departmentMapper;
 
@@ -35,18 +30,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentResponse create(DepartmentRequest request) {
 
         if (repository.existsByName(request.name())) {
-//            throw new RuntimeException("Department already exists");
             throw new InvalidBusinessStateException("Department already exists");
         }
-
-//        Long seq = jdbcTemplate.queryForObject(
-//                "SELECT nextval('department_seq')", Long.class);
-
-//        Department dept = Department.builder()
-//                .departmentId(DepartmentIdGenerator.nextId(seq))
-//                .name(request.getName())
-//                .description(request.getDescription())
-//                .build();
 
         Department dept = departmentMapper.mapToEntity(request);
 
@@ -65,10 +50,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     // ===================== GET Department By departmentId=====================
     @Override
     public DepartmentResponse getByDepartmentId(String departmentId) {
+
         return repository.findByDepartmentId(departmentId)
-//                .map(this::map)
                 .map(departmentMapper::mapToResponse)
-//                .orElseThrow(() -> new RuntimeException("Department not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
 
     }
@@ -76,9 +60,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     // ===================== GET ALL Departments =====================
     @Override
     public List<DepartmentResponse> getAll() {
+
         return repository.findAll()
                 .stream()
-//                .map(this::map)
                 .map(departmentMapper::mapToResponse)
                 .toList();
     }
@@ -86,12 +70,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     // ===================== UPDATE Department =====================
     @Override
     public DepartmentResponse update(String departmentId, DepartmentRequest request) {
+
         Department dept = repository.findByDepartmentId(departmentId)
-//                .orElseThrow(() -> new RuntimeException("Department not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
 
-//        dept.setName(request.getName());
-//        dept.setDescription(request.getDescription());
         dept.update(request.name(), request.description());
 
         auditService.log(
@@ -100,19 +82,16 @@ public class DepartmentServiceImpl implements DepartmentService {
                 dept.getDepartmentId(),
                 "Department updated: " + dept.getName()
         );
-
         return departmentMapper.mapToResponse(dept);
     }
 
     // ===================== DELETE Department =====================
     @Override
     public void delete(String departmentId) {
-//        if (!repository.existsByDepartmentId(departmentId)) {
-//            throw new RuntimeException("Department not found");
-//        }
+
         Department dept = repository.findByDepartmentId(departmentId)
-//                .orElseThrow(() -> new RuntimeException("Department not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
+
         auditService.log(
                 AuditAction.DELETE_DEPARTMENT,
                 "Department",
@@ -120,15 +99,6 @@ public class DepartmentServiceImpl implements DepartmentService {
                 "Department deleted: " + dept.getName()
         );
 
-//        repository.deleteByDepartmentId(departmentId);
         repository.delete(dept);
     }
-
-//    private DepartmentResponse map(Department dept) {
-//        DepartmentResponse res = new DepartmentResponse();
-//        res.setDepartmentId(dept.getDepartmentId());
-//        res.setName(dept.getName());
-//        res.setDescription(dept.getDescription());
-//        return res;
-//    }
 }

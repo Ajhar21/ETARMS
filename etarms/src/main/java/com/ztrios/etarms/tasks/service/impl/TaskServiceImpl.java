@@ -11,17 +11,19 @@ import com.ztrios.etarms.identity.entity.User;
 import com.ztrios.etarms.identity.repository.UserRepository;
 import com.ztrios.etarms.tasks.dto.*;
 import com.ztrios.etarms.tasks.entity.Task;
-import com.ztrios.etarms.tasks.enums.TaskPriority;
 import com.ztrios.etarms.tasks.enums.TaskStatus;
+import com.ztrios.etarms.tasks.mapper.TaskMapper;
 import com.ztrios.etarms.tasks.repository.TaskRepository;
 import com.ztrios.etarms.tasks.service.TaskService;
 import com.ztrios.etarms.tasks.util.TaskIdGenerator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
@@ -30,18 +32,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskIdGenerator taskIdGenerator;
     private final AuditorAwareImpl auditorAwareImpl;
     private final AuditService auditService;
-
-    public TaskServiceImpl(TaskRepository taskRepository,
-                           EmployeeRepository employeeRepository,
-                           UserRepository userRepository,
-                           TaskIdGenerator taskIdGenerator, AuditorAwareImpl auditorAwareImpl, AuditService auditService) {
-        this.taskRepository = taskRepository;
-        this.employeeRepository = employeeRepository;
-        this.userRepository = userRepository;
-        this.taskIdGenerator = taskIdGenerator;
-        this.auditorAwareImpl = auditorAwareImpl;
-        this.auditService = auditService;
-    }
+    private final TaskMapper taskMapper;
 
     @Transactional
     @Override
@@ -51,7 +42,6 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid assignedTo(employee)"));
 
         // Fetch manager from JWT
-//        String managerUserId = SecurityContextHolder.getContext().getAuthentication().getName();
         String managerUsername = auditorAwareImpl.getCurrentAuditor()
                 .orElseThrow(() -> new ResourceNotFoundException("No authenticated user found"));
         User manager = userRepository.findByUsername(managerUsername)
@@ -60,18 +50,7 @@ public class TaskServiceImpl implements TaskService {
         // Generate taskId
         String taskId = taskIdGenerator.nextTaskId();
 
-        // Set defaults
-        Task task = new Task(
-                taskId,
-                request.title(),
-                request.description(),
-                TaskStatus.CREATED,        // default status
-//                TaskPriority.MEDIUM,       // default priority
-                TaskPriority.valueOf(request.priority()),
-                request.deadline(),
-                assignee,
-                manager
-        );
+        Task task = taskMapper.mapToEntity(request, assignee, manager);
 
         taskRepository.save(task);
 
@@ -82,25 +61,14 @@ public class TaskServiceImpl implements TaskService {
                 "Task created with title: " + task.getTitle()
         );
 
-        // Build response
-//        return new TaskResponse(
-//                task.getTaskId(),
-//                task.getTitle(),
-//                task.getDescription(),
-//                task.getStatus().name(),
-//                task.getPriority().name(),
-//                task.getDeadline(),
-//                task.getAssignee().getEmployeeId(),
-//                task.getTaskManager().getUsername()
-//        );
-        return map(task);
+        return taskMapper.mapToResponse(task);
     }
 
     @Transactional
     @Override
     public TaskReassignResponse reassignTask(TaskReassignRequest request) {
+
         // Fetch task
-//        Task task = taskRepository.findById(taskRepository.findId(request.taskId()))
         Task task = taskRepository.findByTaskId(request.taskId())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid taskId, no task found by taskId"));
 
@@ -129,21 +97,14 @@ public class TaskServiceImpl implements TaskService {
                 "Task reassigned from " + previousAssignee + " to " + newAssignee.getEmployeeId()
         );
 
-        return new TaskReassignResponse(
-                task.getTaskId(),
-                previousAssignee,
-                newAssignee.getEmployeeId(),
-                task.getStatus().name(),
-                task.getUpdatedBy(),
-                task.getUpdatedAt()
-        );
+        return taskMapper.mapToReassignResponse(task, previousAssignee, newAssignee);
     }
 
     @Transactional
     @Override
     public TaskResponse statusUpdate(TaskStatusUpdateReq request) {
+
         // Fetch task
-//        Task task = taskRepository.findById(taskRepository.findId(request.taskId()))
         Task task = taskRepository.findByTaskId(request.taskId())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid taskId, no task found by taskId"));
 
@@ -163,18 +124,7 @@ public class TaskServiceImpl implements TaskService {
                 "Task status updated to " + task.getStatus()
         );
 
-        // Build response
-//        return new TaskResponse(
-//                task.getTaskId(),
-//                task.getTitle(),
-//                task.getDescription(),
-//                task.getStatus().name(),
-//                task.getPriority().name(),
-//                task.getDeadline(),
-//                task.getAssignee().getEmployeeId(),
-//                task.getTaskManager().getUsername()
-//        );
-        return map(task);
+        return taskMapper.mapToResponse(task);
     }
 
     @Override
@@ -185,9 +135,9 @@ public class TaskServiceImpl implements TaskService {
                         new ResourceNotFoundException("Employee not found: " + employeeId)
                 );
 
-        return taskRepository.findByAssignee(employee)
+        return taskRepository.findByAssigneeWithUsers(employee)
                 .stream()
-                .map(this::map)
+                .map(taskMapper::mapToResponse)
                 .toList();
     }
 
@@ -201,20 +151,7 @@ public class TaskServiceImpl implements TaskService {
 
         return taskRepository.findByTaskManager(user)
                 .stream()
-                .map(this::map)
+                .map(taskMapper::mapToResponse)
                 .toList();
-    }
-
-    private TaskResponse map(Task task) {
-        return new TaskResponse(
-                task.getTaskId(),
-                task.getTitle(),
-                task.getDescription(),
-                task.getStatus().name(),
-                task.getPriority().name(),
-                task.getDeadline(),
-                task.getAssignee().getEmployeeId(),      // business employee id
-                task.getTaskManager().getUsername()      // manager username from User
-        );
     }
 }

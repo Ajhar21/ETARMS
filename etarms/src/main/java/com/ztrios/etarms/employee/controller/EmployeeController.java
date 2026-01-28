@@ -50,13 +50,7 @@ public class EmployeeController {
                         response));
     }
 
-    // ===================== CREATE Employee =====================
-//    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-//    @PostMapping
-//    public EmployeeResponse create(@Valid @RequestBody EmployeeCreateRequest request) {
-//        return service.create(request);
-//    }
-
+    // ===================== CREATE Employees =====================
     @PostMapping
     public ResponseEntity<ApiResponse<EmployeeResponse>> createEmployee(
             @RequestBody @Valid EmployeeCreateRequest request

@@ -16,10 +16,8 @@ import com.ztrios.etarms.employee.repository.DepartmentRepository;
 import com.ztrios.etarms.employee.repository.EmployeeRepository;
 import com.ztrios.etarms.employee.service.CloudinaryService;
 import com.ztrios.etarms.employee.service.EmployeeService;
-import com.ztrios.etarms.employee.util.EmployeeIdGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,7 +33,6 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@Slf4j
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
@@ -45,31 +42,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final AuditService auditService;
     private final EmployeeMapper employeeMapper;
 
-//    public EmployeeServiceImpl(CloudinaryService cloudinaryService, EmployeeRepository repository, DepartmentRepository departmentRepository,
-//                               EmployeeIdGenerator idGenerator, AuditService auditService) {
-//        this.cloudinaryService = cloudinaryService;
-//        this.repository = repository;
-//        this.departmentRepository = departmentRepository;
-//        this.idGenerator = idGenerator;
-//        this.auditService = auditService;
-//    }
-
     // ===================== CREATE Employee =====================
     @Override
     public EmployeeResponse create(EmployeeCreateRequest request) {
 
         if (repository.existsByEmail(request.email())) {
-
-//            throw new IllegalArgumentException("Email already exists");
             throw new InvalidBusinessStateException("Email already exists");
         }
 
         if (repository.existsByPhoneNumber(request.phoneNumber())) {
-//            throw new IllegalArgumentException("Phone number already exists");
             throw new InvalidBusinessStateException("Phone number already exists");
         }
         Department department = departmentRepository
-//                .findById(request.departmentId())
                 .findByName(request.departmentName())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -77,28 +61,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                         )
                 );
 
-//        Employee employee = new Employee(
-//                idGenerator.generate(),
-//                request.firstName(),
-//                request.lastName(),
-//                request.email(),
-//                request.phoneNumber(),
-//                request.jobTitle(),
-//                EmploymentStatus.ACTIVE,
-//                department
-//        );
-
         Employee employee = employeeMapper.mapToEntity(request, department);
-
         repository.save(employee);
-
-//        auditService.log(
-//                AuditAction.CREATE_EMPLOYEE,
-//                "Employee",
-//                employee.getEmployeeId(),
-//                "Employee created with name " + employee.getFirstName()+" "+ employee.getLastName()
-//        );
-//
         return employeeMapper.mapToResponse(employee);
     }
 
@@ -109,11 +73,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         Department department = departmentRepository
-//                .findById(request.departmentId())
                 .findByName(request.departmentName())
                 .orElseThrow(() ->
-//                        new IllegalArgumentException(
-//                                "Invalid department Name: " + request.departmentName()
                         new ResourceNotFoundException("Invalid department Name: " + request.departmentName()));
 
         employee.update(
@@ -125,14 +86,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 department,
                 request.employmentStatus());
 
-
-//        auditService.log(
-//                AuditAction.UPDATE_EMPLOYEE,
-//                "Employee",
-//                emp.getEmployeeId(),
-//                "Employee updated: " + emp.getFirstName()+" "+ emp.getLastName()
-//        );
-
         return employeeMapper.mapToResponse(employee);
     }
 
@@ -142,16 +95,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee emp = repository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
-//        auditService.log(
-//                AuditAction.DELETE_EMPLOYEE,
-//                "Employee",
-//                emp.getEmployeeId(),
-//                "Employee deleted: " + emp.getFirstName()+" "+ emp.getLastName()
-//        );
-
         repository.delete(emp);
-
-//        repository.deleteByEmployeeId(employeeId);
     }
 
     // ===================== GET Employee By employeeId=====================
@@ -159,12 +103,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse getByEmployeeId(String employeeId) {
         return repository.findByEmployeeId(employeeId)
                 .map(employeeMapper::mapToResponse)
-//                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
     }
 
     // ===================== GET Employees Pagination=====================
-//    @Transactional(readOnly = true)
     @Override
     public EmployeePageResponse getEmployees(int page, int size, String sort) {
         // parse sort string like "id,asc"
@@ -186,7 +128,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         List<EmployeeResponse> content = employeePage.getContent()
                 .stream()
-//                .map(this::mapToResponse)
                 .map(employeeMapper::mapToResponse)
                 .collect(Collectors.toList());
 
@@ -203,7 +144,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public String uploadEmployeePhoto(String employeeId, MultipartFile file) {
         Employee employee = repository.findByEmployeeId(employeeId)
-//                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         //business rules
@@ -212,14 +152,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         validateImage(file);
-
-        log.warn("after validate {}", file);
-
-
         String photoUrl = cloudinaryService.uploadEmployeeImage(employeeId, file);
-
         employee.setPhotoUrl(photoUrl);
-//        thumbnailUrl = photoUrl != null ? cloudinaryService.getThumbnailUrl(employeeId) : null;
         repository.save(employee);
 
         auditService.log(
@@ -232,26 +166,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         return photoUrl;
     }
 
-//    private void validateImage(MultipartFile file) {
-//        if (file.isEmpty()) {
-////            throw new IllegalArgumentException("File is empty");
-//            throw new InvalidFileException("File is empty");
-//        }
-//
-//        if (file.getSize() > 2 * 1024 * 1024) { // 2MB limit
-////            throw new IllegalArgumentException("File size exceeds 2MB");
-//            throw new InvalidFileException("File size exceeds 2MB");
-//        }
-//
-//        String contentType = file.getContentType();
-//        log.warn("contentType : {}", contentType);
-//
-//        if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
-
-    /// /            throw new IllegalArgumentException("Only JPEG or PNG images are allowed");
-//            throw new InvalidFileException("Only JPEG or PNG images are allowed");
-//        }
-//    }
     private void validateImage(MultipartFile file) {
         if (file.isEmpty()) {
             throw new InvalidFileException("File is empty");
@@ -265,7 +179,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             Tika tika = new Tika();
             String detectedType = tika.detect(is);
 
-            log.warn("Detected content type: {}", detectedType);
+            //log.warn("Detected content type: {}", detectedType);
 
             if (!"image/jpeg".equals(detectedType) && !"image/png".equals(detectedType)) {
                 throw new InvalidFileException("Only JPEG or PNG images are allowed");
@@ -274,25 +188,4 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new InvalidFileException("Failed to read file content");
         }
     }
-
-//    private EmployeeResponse mapToResponse(Employee e) {
-//        return new EmployeeResponse(
-//                e.getEmployeeId(),
-//                e.getFirstName(),
-//                e.getLastName(),
-//                e.getEmail(),
-//                e.getPhoneNumber(),
-//                e.getJobTitle(),
-//                e.getEmploymentStatus(),
-////                e.getDepartmentId(),
-//                e.getDepartment().getDepartmentId(),
-//                e.getPhotoUrl(),
-////                thumbnailUrl,
-//                e.getPhotoUrl() != null ? cloudinaryService.getThumbnailUrl(e.getEmployeeId()) : null,
-//                e.getCreatedAt(),
-//                e.getUpdatedAt()
-//        );
-//    }
-
-
 }

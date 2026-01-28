@@ -8,7 +8,7 @@ public record AttendanceHistoryResponse(
         LocalDate attendanceDate,
         LocalDateTime checkInTime,
         LocalDateTime checkOutTime,
-//        int workingMinutes,
         Integer workingMinutes, //type change for null value
         String attendanceStatus
-) {}
+) {
+}

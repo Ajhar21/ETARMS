@@ -1,8 +1,6 @@
 package com.ztrios.etarms.tasks.service;
 
 import com.ztrios.etarms.tasks.dto.*;
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 

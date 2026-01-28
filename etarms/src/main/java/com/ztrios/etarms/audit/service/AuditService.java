@@ -17,6 +17,17 @@ public class AuditService {
     private final AuditLogRepository auditLogRepository;
     private final AuditorAwareImpl auditorAwareImpl;
 
+    /**
+     * Starts a **new, independent transaction** for this method.
+     * <p>
+     * Key points:
+     * - Even if the calling method already has a transaction, this method will temporarily **suspend the outer transaction**
+     * and run in its own transaction.
+     * - Commits or rollbacks here **do not affect the outer transaction**.
+     * - Useful for:
+     * - Logging or auditing operations that should persist even if the main transaction fails
+     * - Independent updates that must succeed regardless of the caller
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(
             String action,
@@ -25,8 +36,6 @@ public class AuditService {
             String description
     ) {
         AuditLog log = new AuditLog();
-
-//        log.setActor(auditorAwareImpl.getCurrentAuditor().toString());
         log.setActor(auditorAwareImpl.getCurrentAuditor().orElse("SYSTEM"));
         log.setAction(action);
         log.setEntityType(entityType);

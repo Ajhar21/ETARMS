@@ -12,17 +12,11 @@ import java.util.UUID;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
 
-    Optional<Employee> findByEmail(String email);
-
     boolean existsByEmail(String email);
 
     boolean existsByPhoneNumber(String phoneNumber);
 
-    boolean existsByEmployeeId(String employeeId);
-
     Optional<Employee> findByEmployeeId(String employeeId); // optional if using public ID
-
-    void deleteByEmployeeId(String employeeId);
 
     //    boolean isActive(String employeeId);
     @Query("SELECT COUNT(e) > 0 FROM Employee e " +

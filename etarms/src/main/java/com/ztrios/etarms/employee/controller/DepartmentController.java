@@ -21,10 +21,6 @@ public class DepartmentController {
 
     private final DepartmentService service;
 
-//    public DepartmentController(DepartmentService service) {
-//        this.service = service;
-//    }     //served by @RequiredArgsConstructor
-
     // ===================== GET ALL Departments =====================
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")

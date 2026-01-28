@@ -14,17 +14,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 /****************************************
-@Data and @Getter together → redundant
+ @Data and @Getter together → redundant
 
-@Builder on a JPA entity → risky
+ @Builder on a JPA entity → risky
 
-getId() method overwrites departmentId incorrectly → broken
+ Lombok all-args constructor (@AllArgsConstructor) is risky for entities
 
-Lombok all-args constructor (@AllArgsConstructor) is risky for entities
-
-id field (PK) vs departmentId field (business ID) is correct, but needs clear accessors
-
-*********************************************/
+ id field (PK) vs departmentId field (business ID)
+ *********************************************/
 
 @Entity
 @Table(name = "departments")
@@ -37,8 +34,8 @@ public class Department {
      * Internal primary key (not exposed to clients)
      */
     @Id
-    @Column(nullable = false,updatable = false)
-    private UUID id=UUID.randomUUID();
+    @Column(nullable = false, updatable = false)
+    private UUID id = UUID.randomUUID();
 
     /**
      * Business ID (exposed to clients)

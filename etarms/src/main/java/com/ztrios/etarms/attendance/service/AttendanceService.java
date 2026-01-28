@@ -2,14 +2,11 @@ package com.ztrios.etarms.attendance.service;
 
 import com.ztrios.etarms.attendance.dto.AttendanceRequest;
 import com.ztrios.etarms.attendance.dto.AttendanceCheckInResponse;
-import com.ztrios.etarms.attendance.dto.AttendanceRequest;
 import com.ztrios.etarms.attendance.dto.AttendanceCheckOutResponse;
 import com.ztrios.etarms.attendance.dto.AttendanceHistoryRequest;
 import com.ztrios.etarms.attendance.dto.AttendanceHistoryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface AttendanceService {
 
@@ -41,6 +38,5 @@ public interface AttendanceService {
      * - Returns all attendance records in the date range
      * - Optional: sorted by attendanceDate ascending
      */
-//    List<AttendanceHistoryResponse> getHistory(AttendanceHistoryRequest request);
     Page<AttendanceHistoryResponse> getHistory(AttendanceHistoryRequest request, Pageable pageable);
 }
