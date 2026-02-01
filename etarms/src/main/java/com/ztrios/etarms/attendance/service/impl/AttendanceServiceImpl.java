@@ -5,7 +5,6 @@ import com.ztrios.etarms.attendance.entity.Attendance;
 import com.ztrios.etarms.attendance.mapper.AttendanceMapper;
 import com.ztrios.etarms.attendance.repository.AttendanceRepository;
 import com.ztrios.etarms.attendance.service.AttendanceService;
-import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.common.exception.BusinessException;
 import com.ztrios.etarms.common.exception.ResourceNotFoundException;
@@ -54,14 +53,6 @@ public class AttendanceServiceImpl implements AttendanceService {
         Attendance attendance = attendanceMapper.mapToEntity(request, employee);
 
         attendanceRepository.save(attendance);
-
-        auditService.log(
-                AuditAction.CHECK_IN,
-                "Attendance",
-                attendance.getId().toString(),
-                "Employee checked in at " + now
-        );
-
         return attendanceMapper.toCheckInResponse(attendance);
     }
 
@@ -72,21 +63,14 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         Attendance openAttendance = attendanceRepository
-                .findByEmployeeAndCheckOutTimeIsNull(employee)
+//                .findByEmployeeAndCheckOutTimeIsNull(employee)
+                .findTopByEmployeeAndCheckOutTimeIsNullOrderByCheckInTimeDesc(employee)     // solution for multiple open attendances, taking the latest one
                 .orElseThrow(() -> new BusinessException("No open attendance found for check-out"));
 
         // Perform check-out using entity method
         openAttendance.checkOut(LocalDateTime.now());
 
         attendanceRepository.save(openAttendance);
-
-        auditService.log(
-                AuditAction.CHECK_OUT,
-                "Attendance",
-                openAttendance.getId().toString(),
-                "Employee " + employee.getEmployeeId() + " Employee checked out at " + openAttendance.getCheckOutTime()
-        );
-
         return attendanceMapper.toCheckOutResponse(openAttendance);
     }
 

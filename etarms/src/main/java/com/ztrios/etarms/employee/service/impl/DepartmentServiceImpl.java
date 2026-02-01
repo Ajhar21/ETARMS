@@ -1,6 +1,5 @@
 package com.ztrios.etarms.employee.service.impl;
 
-import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.common.exception.InvalidBusinessStateException;
 import com.ztrios.etarms.common.exception.ResourceNotFoundException;
@@ -37,13 +36,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         repository.save(dept);
 
-        auditService.log(
-                AuditAction.CREATE_DEPARTMENT,
-                "Department",
-                dept.getDepartmentId(),
-                "Department created: " + dept.getName()
-        );
-
         return departmentMapper.mapToResponse(dept);
     }
 
@@ -76,12 +68,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         dept.update(request.name(), request.description());
 
-        auditService.log(
-                AuditAction.UPDATE_DEPARTMENT,
-                "Department",
-                dept.getDepartmentId(),
-                "Department updated: " + dept.getName()
-        );
         return departmentMapper.mapToResponse(dept);
     }
 
@@ -91,13 +77,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         Department dept = repository.findByDepartmentId(departmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
-
-        auditService.log(
-                AuditAction.DELETE_DEPARTMENT,
-                "Department",
-                dept.getDepartmentId(),
-                "Department deleted: " + dept.getName()
-        );
 
         repository.delete(dept);
     }

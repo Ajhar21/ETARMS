@@ -34,14 +34,6 @@ public class ReportService {
                             )
                     );
         }
-
-        auditService.log(
-                AuditAction.GENERATE_ATTENDANCE_REPORT,
-                "Report",
-                "ATTENDANCE_" + year + "_" + month,
-                "Generated monthly attendance report for " + (departmentId != null ? "department " + departmentId : "all departments")
-        );
-
         return attendanceReportRepository.getMonthlyAttendanceSummary(year, month, departmentId);
     }
 
@@ -84,13 +76,6 @@ public class ReportService {
         }
 
         writer.flush();
-
-        auditService.log(
-                AuditAction.EXPORT_ATTENDANCE_REPORT,
-                "Report",
-                "ATTENDANCE_" + year + "_" + month,
-                "Exported monthly attendance report for " + (departmentId != null ? "department " + departmentId : "all departments")
-        );
     }
 
 }

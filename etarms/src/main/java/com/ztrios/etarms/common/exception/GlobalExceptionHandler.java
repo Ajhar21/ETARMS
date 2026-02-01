@@ -2,6 +2,8 @@ package com.ztrios.etarms.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice("com.ztrios.etarms")  //explocitly mention base package
 public class GlobalExceptionHandler {
 
@@ -125,11 +128,29 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IncorrectResultSizeDataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleIncorrectResultSize(
+            IncorrectResultSizeDataAccessException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ErrorResponse.of(
+                        500,
+                        "Data Integrity Error",
+                        "System detected inconsistent data. Please contact support.",
+                        request.getRequestURI()
+                )
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnhandledException(
             Exception ex,
             HttpServletRequest request
     ) {
+
+        log.warn(ex.getMessage());  //dev environment only.helpful for debugging in generic exception(ex:IncorrectResultSizeDataAccessException).
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ErrorResponse.of(
                         500,
@@ -139,5 +160,4 @@ public class GlobalExceptionHandler {
                 )
         );
     }
-
 }

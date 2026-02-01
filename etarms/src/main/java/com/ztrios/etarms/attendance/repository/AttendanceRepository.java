@@ -24,7 +24,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
      * Find open attendance (checked in but not yet checked out) for a given employee
      * Ensures employee cannot check in twice
      */
-    Optional<Attendance> findByEmployeeAndCheckOutTimeIsNull(Employee employee);
+//    Optional<Attendance> findByEmployeeAndCheckOutTimeIsNull(Employee employee);
+    Optional<Attendance> findTopByEmployeeAndCheckOutTimeIsNullOrderByCheckInTimeDesc(Employee employee);   //solution for multiple open attendance
 
     /**
      * Fetch attendance history for an employee within a date range

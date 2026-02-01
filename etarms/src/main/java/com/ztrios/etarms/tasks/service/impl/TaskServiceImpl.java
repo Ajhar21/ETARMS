@@ -1,7 +1,6 @@
 package com.ztrios.etarms.tasks.service.impl;
 
 import com.ztrios.etarms.audit.config.AuditorAwareImpl;
-import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.common.exception.BusinessException;
 import com.ztrios.etarms.common.exception.ResourceNotFoundException;
@@ -53,14 +52,6 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskMapper.mapToEntity(request, assignee, manager);
 
         taskRepository.save(task);
-
-        auditService.log(
-                AuditAction.CREATE_TASK,
-                "Task",
-                task.getId().toString(),
-                "Task created with title: " + task.getTitle()
-        );
-
         return taskMapper.mapToResponse(task);
     }
 
@@ -89,14 +80,6 @@ public class TaskServiceImpl implements TaskService {
 
         // Save task
         taskRepository.save(task);
-
-        auditService.log(
-                AuditAction.REASSIGN_TASK,
-                "Task",
-                task.getId().toString(),
-                "Task reassigned from " + previousAssignee + " to " + newAssignee.getEmployeeId()
-        );
-
         return taskMapper.mapToReassignResponse(task, previousAssignee, newAssignee);
     }
 
@@ -116,14 +99,6 @@ public class TaskServiceImpl implements TaskService {
         }
 
         taskRepository.save(task);
-
-        auditService.log(
-                AuditAction.UPDATE_TASK_STATUS,
-                "Task",
-                task.getId().toString(),
-                "Task status updated to " + task.getStatus()
-        );
-
         return taskMapper.mapToResponse(task);
     }
 
