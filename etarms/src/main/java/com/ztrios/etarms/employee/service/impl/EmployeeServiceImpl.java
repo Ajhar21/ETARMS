@@ -4,7 +4,6 @@ import com.ztrios.etarms.audit.model.AuditAction;
 import com.ztrios.etarms.audit.service.AuditService;
 import com.ztrios.etarms.common.exception.BusinessException;
 import com.ztrios.etarms.common.exception.InvalidBusinessStateException;
-import com.ztrios.etarms.common.exception.InvalidFileException;
 import com.ztrios.etarms.common.exception.ResourceNotFoundException;
 import com.ztrios.etarms.employee.dto.EmployeeCreateRequest;
 import com.ztrios.etarms.employee.dto.EmployeePageResponse;
@@ -18,7 +17,6 @@ import com.ztrios.etarms.employee.service.CloudinaryService;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,8 +24,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -141,6 +137,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
     }
 
+    // ===================== POST Upload Employee Photo=====================
     @Transactional
     public String uploadEmployeePhoto(String employeeId, MultipartFile file) {
         Employee employee = repository.findByEmployeeId(employeeId)
@@ -151,41 +148,11 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new BusinessException("Cannot upload photo for inactive/Suspended/terminated employee");
         }
 
-        validateImage(file);
+        cloudinaryService.validateImage(file);
         String photoUrl = cloudinaryService.uploadEmployeeImage(employeeId, file);
         employee.setPhotoUrl(photoUrl);
         repository.save(employee);
 
-        auditService.log(
-                AuditAction.UPLOAD_EMPLOYEE_PHOTO,
-                "Employee",
-                employee.getEmployeeId(),
-                "Employee photo uploaded" + employee.getFirstName() + " " + employee.getLastName()
-        );
-
         return photoUrl;
-    }
-
-    private void validateImage(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new InvalidFileException("File is empty");
-        }
-
-        if (file.getSize() > 2 * 1024 * 1024) {
-            throw new InvalidFileException("File size exceeds 2MB");
-        }
-
-        try (InputStream is = file.getInputStream()) {
-            Tika tika = new Tika();
-            String detectedType = tika.detect(is);
-
-            //log.warn("Detected content type: {}", detectedType);
-
-            if (!"image/jpeg".equals(detectedType) && !"image/png".equals(detectedType)) {
-                throw new InvalidFileException("Only JPEG or PNG images are allowed");
-            }
-        } catch (IOException e) {
-            throw new InvalidFileException("Failed to read file content");
-        }
     }
 }

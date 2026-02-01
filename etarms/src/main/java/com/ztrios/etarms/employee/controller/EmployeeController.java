@@ -7,6 +7,7 @@ import com.ztrios.etarms.employee.dto.EmployeeResponse;
 import com.ztrios.etarms.employee.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -90,11 +91,12 @@ public class EmployeeController {
     }
 
     // ===================== POST Employee Image=====================
-    @PostMapping("/{id}/photo")
+    @PostMapping(value = "/{id}/photo",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)     // adding this attribute to make swagger support
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<String>> uploadPhoto(
             @PathVariable("id") String employeeId,
-            @Valid @RequestParam("file") MultipartFile file
+            @Valid @RequestParam("file") MultipartFile file     //never use @RequestBody here, because swagger won't detect it as form-data
     ) {
         String photoUrl = service.uploadEmployeePhoto(employeeId, file);
         return ResponseEntity.status(HttpStatus.OK)

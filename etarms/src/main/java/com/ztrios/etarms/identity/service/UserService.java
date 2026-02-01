@@ -19,14 +19,6 @@ public class UserService {
 
     public User createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        auditService.log(
-                AuditAction.LOGIN,
-                "User",
-                user.getId().toString(),
-                "User logged in"
-        );
-
         return userRepository.save(user);
     }
 }

@@ -23,6 +23,7 @@ public class ReportController {
 
     private final ReportService reportService;
 
+    /*======================== Monthly Attendance Report generation =======================*/
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/attendance/monthly")
     public ResponseEntity<ApiResponse<List<MonthlyAttendanceSummaryProjection>>> getMonthlyAttendance(
@@ -41,6 +42,7 @@ public class ReportController {
         );
     }
 
+    /*======================== Export Monthly Attendance Report =======================*/
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping(value = "/attendance/monthly/export", produces = "text/csv")
     public void exportMonthlyAttendanceCsv(
