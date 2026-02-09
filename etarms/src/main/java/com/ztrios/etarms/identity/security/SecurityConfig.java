@@ -1,5 +1,6 @@
 package com.ztrios.etarms.identity.security;
 
+import com.ztrios.etarms.identity.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

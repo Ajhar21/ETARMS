@@ -1,4 +1,4 @@
-package com.ztrios.etarms.identity.security;
+package com.ztrios.etarms.identity.service;
 
 import com.ztrios.etarms.identity.entity.User;
 import com.ztrios.etarms.identity.repository.UserRepository;
