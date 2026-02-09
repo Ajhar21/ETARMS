@@ -2,6 +2,8 @@
 
 __AuthModule__<br>
 login: POST http://localhost:8080/api/v1/auth/login<br>
+logout: POST http://localhost:8080/api/v1/auth/logout<br>
+refresh-token: POST http://localhost:8080/api/v1/auth/refresh-token<br>
 
 __employeeModule__<br>
 create employee: POST http://localhost:8080/api/v1/employees<br> 
